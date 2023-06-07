@@ -1,0 +1,21 @@
+## Comments can be added anywhere on a valid line by starting with '##'
+##
+## Note, trailing spaces will NOT be trimmed. If you want room between the end of the string and the start of a
+## comment on the same line, use TABs.
+sample.portalgenerator.title=Portal Generator (CTRL + SHIFT + P)
+sample.portalgenerator.tooltip=Create Portals with a single click
+sample.portalgenerator.pane.title=Portal Generator
+sample.portalgenerator.pane.replacefloor=Replace Floor
+sample.portalgenerator.pane.portaltype=Portal Type
+sample.portalgenerator.pane.portaltype.nether=Nether Portal
+sample.portalgenerator.pane.portaltype.end=End Portal
+sample.portalgenerator.pane.nether.pane.title=Nether Portal
+sample.portalgenerator.pane.nether.pane.orientation=Portal Orientation
+sample.portalgenerator.pane.nether.pane.orientation.x=X-Axis
+sample.portalgenerator.pane.nether.pane.orientation.y=Y-Axis
+sample.portalgenerator.pane.nether.pane.width=Block Width
+sample.portalgenerator.pane.nether.pane.height=Block Height
+sample.portalgenerator.pane.nether.pane.corners=Corners
+sample.portalgenerator.pane.nether.pane.percentage=Percentage Complete
+sample.portalgenerator.pane.end.pane.title=End Portal
+sample.portalgenerator.pane.end.pane.filledcount=Filled 'Eye of Ender' count

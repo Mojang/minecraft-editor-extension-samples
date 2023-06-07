@@ -1,0 +1,21 @@
+## Comments can be added anywhere on a valid line by starting with '##'
+##
+## Note, trailing spaces will NOT be trimmed. If you want room between the end of the string and the start of a
+## comment on the same line, use TABs.
+sample.farmgenerator.tool.title=Farm Generator (CTRL + SHIFT + F)
+sample.farmgenerator.tool.tooltip=Quickly create a custom farm
+sample.farmgenerator.pane.title=Farm Generator
+sample.farmgenerator.pane.length=Length
+sample.farmgenerator.pane.width=Width
+sample.farmgenerator.pane.fence=Fence
+sample.farmgenerator.pane.irrigation=Add Irrigation
+sample.farmgenerator.pane.crops.title=Crops
+sample.farmgenerator.pane.crops.wheat=Wheat
+sample.farmgenerator.pane.crops.potato=Potato
+sample.farmgenerator.pane.crops.beets=Beetroot
+sample.farmgenerator.pane.crops.pumpkin=Pumpkin
+sample.farmgenerator.pane.crops.carrot=Carrot
+sample.farmgenerator.pane.animals.title=Animals
+sample.farmgenerator.pane.animals.cow=Cow
+sample.farmgenerator.pane.animals.sheep=Sheep
+sample.farmgenerator.pane.animals.pig=Pig

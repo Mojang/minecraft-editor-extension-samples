@@ -1,0 +1,1 @@
+Adds a dialog that allows you to place a selection of randomized trees of certain types wherever you click in the world.<br><br>This extension demonstrates the use of UI components, block placement and mouse input.<br><br>**Notes**: Activated using CTRL+SHIFT+T or through the tool rail.<br>**Author**: Jake
