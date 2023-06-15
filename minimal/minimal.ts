@@ -37,7 +37,7 @@ function incrementClickValue(storage: PerPlayerStorage) {
  */
 export function registerMinimalExtension() {
     registerEditorExtension<PerPlayerStorage>(
-        'minimal-template',
+        'minimal-template-sample',
 
         // Provide a function closure which is executed when each player connects to the server
         // The uiSession object holds the context for the extension and the player

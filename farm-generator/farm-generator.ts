@@ -421,7 +421,7 @@ function addFarmGeneratorTool(uiSession: IPlayerUISession) {
  */
 export function registerFarmGeneratorExtension() {
     registerEditorExtension(
-        'FarmGenerator',
+        'FarmGenerator-sample',
         (uiSession: IPlayerUISession) => {
             uiSession.log.debug(`Initializing [${uiSession.extensionContext.extensionName}] extension`);
 

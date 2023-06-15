@@ -6,7 +6,7 @@ import { registerEditorExtension } from '@minecraft/server-editor';
  */
 export function registerEmptyExtension() {
     registerEditorExtension(
-        'empty-template',
+        'empty-template-sample',
         uiSession => {
             uiSession.log.debug(
                 `Initializing extension [${uiSession.extensionContext.extensionName}] for player [${uiSession.extensionContext.player.name}]`

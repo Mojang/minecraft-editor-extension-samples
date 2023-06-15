@@ -423,7 +423,7 @@ function addTool(uiSession: IPlayerUISession) {
  */
 export function registerTreeGeneratorExtension() {
     registerEditorExtension(
-        'TreeGenerator',
+        'TreeGenerator-sample',
         (uiSession: IPlayerUISession) => {
             uiSession.log.debug(`Initializing [${uiSession.extensionContext.extensionName}] extension`);
 

@@ -371,7 +371,7 @@ function storeLocationsToPlayer(uiSession: IPlayerUISession<ExtensionStorage>, s
 
 export function registerGotoMarkExtension() {
     registerEditorExtension<ExtensionStorage>(
-        'goto-mark',
+        'goto-mark-sample',
         uiSession => {
             uiSession.log.debug(
                 `Initializing extension [${uiSession.extensionContext.extensionName}] for player [${uiSession.extensionContext.player.name}]`

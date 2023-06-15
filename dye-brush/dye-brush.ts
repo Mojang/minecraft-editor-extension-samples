@@ -319,7 +319,7 @@ export function addDyeBrushTool(uiSession: DyeBrushSession) {
 
 export function registerDyeBrushExtension() {
     registerEditorExtension<DyeBrushStorage>(
-        'dye-brush',
+        'dye-brush-sample',
 
         (uiSession: IPlayerUISession<DyeBrushStorage>) => {
             uiSession.log.debug(`Initializing extension [${uiSession.extensionContext.extensionName}]`);

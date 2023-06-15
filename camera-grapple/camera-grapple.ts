@@ -39,7 +39,7 @@ function flyCameraToTarget(player: Player, viewTarget: Vector3, radius: number) 
  */
 export function registerCameraGrapple() {
     registerEditorExtension(
-        'camera-grapple',
+        'camera-grapple-sample',
         uiSession => {
             uiSession.log.debug(`Initializing extension [${uiSession.extensionContext.extensionName}]`);
 

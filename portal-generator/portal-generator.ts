@@ -597,7 +597,7 @@ function getRandomInt(upper: number) {
  */
 export function registerPortalGeneratorExtension() {
     registerEditorExtension<ExtensionStorage>(
-        'portal-generator',
+        'portal-generator-sample',
         uiSession => {
             uiSession.log.debug(`Initializing [${uiSession.extensionContext.extensionName}] extension`);
 
