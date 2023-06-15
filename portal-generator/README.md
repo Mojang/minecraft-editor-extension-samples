@@ -1,0 +1,1 @@
+Adds a dialog that allows you to place either Nether or End portals (in various states of completion).<br><br>This extension demonstrates dynamic UI component updates, and block placement.<br><br>**Notes**: Activated using CTRL+SHIFT+P or from tool rail.<br>**Author**: Andrew.

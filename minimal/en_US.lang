@@ -1,0 +1,8 @@
+## Comments can be added anywhere on a valid line by starting with '##'
+##
+## Note, trailing spaces will NOT be trimmed. If you want room between the end of the string and the start of a
+## comment on the same line, use TABs.
+sample.minimal.pane.title=Minimal Extension Pane
+sample.minimal.pane.button.clickme=Click Me!
+sample.minimal.menu.title=Minimal Extension
+sample.minimal.menu.showpane=Show my property pane

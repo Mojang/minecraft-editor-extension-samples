@@ -1,0 +1,16 @@
+## Comments can be added anywhere on a valid line by starting with '##'
+##
+## Note, trailing spaces will NOT be trimmed. If you want room between the end of the string and the start of a
+## comment on the same line, use TABs.
+sample.gotomark.tool.title=Goto Mark
+sample.gotomark.tool.tooltip=Set or Jump to a stored location
+sample.gotomark.pane.title=Goto Mark
+sample.gotomark.pane.location=Player Location
+sample.gotomark.pane.button.teleport=Teleport to location
+sample.gotomark.pane.button.setspawn=Set Spawn Point to current
+sample.gotomark.pane.button.gotospawn=Goto Spawn Point
+sample.gotomark.pane.locationpane.title=Stored Locations
+sample.gotomark.pane.locationpane.button.teleport=Teleport to Stored Location
+sample.gotomark.pane.locationpane.button.delete=Delete Stored Location
+sample.gotomark.pane.locationpane.input.name=New Name
+sample.gotomark.pane.locationpane.button.store=Store Current Location As...

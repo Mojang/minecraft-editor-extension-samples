@@ -1,0 +1,1 @@
+An empty template that just registers an extension - ready for you to fill in with all your amazing code!<br><br>**Notes**: Completely empty apart from very basic extension registration boilerplate code - use this as a starting template when you start your new extension.<br>**Author**: Dave (I put a ton of work into this one! ;) )
