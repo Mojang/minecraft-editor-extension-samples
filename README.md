@@ -1,5 +1,7 @@
 # Bedrock Editor Samples
 
+This is a fake change just to test PR.
+
 This folder contains a set of sample Bedrock Editor extensions that you can use for reference or to get started with your own extensions.
 
 We recommend that you familiarize yourself with the
