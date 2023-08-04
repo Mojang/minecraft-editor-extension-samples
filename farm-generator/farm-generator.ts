@@ -14,14 +14,8 @@ import {
     bindDataSource,
     registerEditorExtension,
 } from '@minecraft/server-editor';
-import {
-    BlockType,
-    EntityType,
-    MinecraftBlockTypes,
-    MinecraftEntityTypes,
-    Player,
-    Vector3,
-} from '@minecraft/server';
+import { Player, Vector3 } from '@minecraft/server';
+import { MinecraftBlockTypes, MinecraftEntityTypes } from '@minecraft/vanilla-data';
 
 type SettingsType = {
     farmWidth: number;
@@ -48,28 +42,28 @@ function getRandomInt(upper: number) {
     return Math.ceil(Math.random() * (upper + 1));
 }
 
-function fenceTypeToBlockType(fenceType: number): BlockType {
+function fenceTypeToBlockType(fenceType: number): string {
     switch (fenceType) {
         case 0:
-            return MinecraftBlockTypes.oakFence;
+            return MinecraftBlockTypes.OakFence;
         case 1:
-            return MinecraftBlockTypes.birchFence;
+            return MinecraftBlockTypes.BirchFence;
         case 2:
-            return MinecraftBlockTypes.acaciaFence;
+            return MinecraftBlockTypes.AcaciaFence;
         case 3:
-            return MinecraftBlockTypes.bambooFence;
+            return MinecraftBlockTypes.BambooFence;
         case 4:
-            return MinecraftBlockTypes.cherryFence;
+            return MinecraftBlockTypes.CherryFence;
         case 5:
-            return MinecraftBlockTypes.jungleFence;
+            return MinecraftBlockTypes.JungleFence;
         case 6:
-            return MinecraftBlockTypes.spruceFence;
+            return MinecraftBlockTypes.SpruceFence;
         case 7:
-            return MinecraftBlockTypes.warpedFence;
+            return MinecraftBlockTypes.WarpedFence;
         case 8:
-            return MinecraftBlockTypes.crimsonFence;
+            return MinecraftBlockTypes.CrimsonFence;
         default:
-            return MinecraftBlockTypes.oakFence;
+            return MinecraftBlockTypes.OakFence;
     }
 }
 
@@ -79,8 +73,8 @@ const buildFarm = (
     z: number,
     length: number,
     width: number,
-    possibleAnimals: EntityType[],
-    possibleCrops: BlockType[],
+    possibleAnimals: MinecraftEntityTypes[],
+    possibleCrops: string[],
     player: Player,
     settings: SettingsType
 ) => {
@@ -98,17 +92,17 @@ const buildFarm = (
             const blockAbove = player.dimension.getBlock(locationAbove);
             const isBorder = i === 0 || i === width - 1 || j === 0 || j === length - 1;
             if (xOffset % 3 === 0 && !isBorder && settings.irrigation) {
-                block?.setType(MinecraftBlockTypes.water);
+                block?.setType(MinecraftBlockTypes.Water);
             } else {
-                block?.setType(MinecraftBlockTypes.farmland);
+                block?.setType(MinecraftBlockTypes.Farmland);
             }
             if (isBorder) {
                 blockAbove?.setType(fenceTypeToBlockType(settings.fenceType));
             } else if (possibleAnimals.length > 0 && getRandomInt(5) === 5) {
                 const animal = getRandomInt(possibleAnimals.length - 1);
                 const entityType = possibleAnimals[animal - 1];
-                player.dimension.spawnEntity(entityType.id, blockAbove?.location ?? { x: 0, y: 0, z: 0 });
-            } else if (!block?.isLiquid() && possibleCrops.length > 0) {
+                player.dimension.spawnEntity(entityType, blockAbove?.location ?? { x: 0, y: 0, z: 0 });
+            } else if (!block?.isLiquid && possibleCrops.length > 0) {
                 const crop = getRandomInt(possibleCrops.length - 1);
                 const blockType = possibleCrops[crop - 1];
                 blockAbove?.setType(blockType);
@@ -170,31 +164,31 @@ function addFarmGeneratorSettingsPane(uiSession: IPlayerUISession, tool: IModalT
         const targetBlock = raycastResult.block;
 
         let targetCorner: Vector3 = { x: targetBlock.location.x, y: targetBlock.location.y, z: targetBlock.location.z };
-        const possibleCrops: BlockType[] = [];
+        const possibleCrops: string[] = [];
         if (cropSettings.beetroot) {
-            possibleCrops.push(MinecraftBlockTypes.beetroot);
+            possibleCrops.push(MinecraftBlockTypes.Beetroot);
         }
         if (cropSettings.carrot) {
-            possibleCrops.push(MinecraftBlockTypes.carrots);
+            possibleCrops.push(MinecraftBlockTypes.Carrots);
         }
         if (cropSettings.pumpkin) {
-            possibleCrops.push(MinecraftBlockTypes.pumpkin);
+            possibleCrops.push(MinecraftBlockTypes.Pumpkin);
         }
         if (cropSettings.wheat) {
-            possibleCrops.push(MinecraftBlockTypes.wheat);
+            possibleCrops.push(MinecraftBlockTypes.Wheat);
         }
         if (cropSettings.potato) {
-            possibleCrops.push(MinecraftBlockTypes.potatoes);
+            possibleCrops.push(MinecraftBlockTypes.Potatoes);
         }
-        const possibleAnimals: EntityType[] = [];
+        const possibleAnimals: MinecraftEntityTypes[] = [];
         if (animalSettings.sheep) {
-            possibleAnimals.push(MinecraftEntityTypes.sheep);
+            possibleAnimals.push(MinecraftEntityTypes.Sheep);
         }
         if (animalSettings.cow) {
-            possibleAnimals.push(MinecraftEntityTypes.cow);
+            possibleAnimals.push(MinecraftEntityTypes.Cow);
         }
         if (animalSettings.pig) {
-            possibleAnimals.push(MinecraftEntityTypes.pig);
+            possibleAnimals.push(MinecraftEntityTypes.Pig);
         }
         let x = 1;
         let z = 1;

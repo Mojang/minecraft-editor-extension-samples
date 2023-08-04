@@ -13,7 +13,8 @@ import {
     EditorInputContext,
     IPropertyPane,
 } from '@minecraft/server-editor';
-import { MinecraftBlockTypes, Vector3 } from '@minecraft/server';
+import { Vector3 } from '@minecraft/server';
+import { MinecraftBlockTypes } from '@minecraft/vanilla-data';
 
 enum PortalType {
     Nether = 0,
@@ -370,7 +371,7 @@ class NetherPortal implements IPortalGenerator {
         uiSession.extensionContext.transactionManager.trackBlockChangeArea(from, to);
         for (let y = 0; y < this._dataSource.sizeY; ++y) {
             for (let x = 0; x < this._dataSource.sizeX; ++x) {
-                let block = MinecraftBlockTypes.air;
+                let block = MinecraftBlockTypes.Air;
 
                 // Percent complete is randomized percentage
                 if (this._dataSource.percentComplete !== 100) {
@@ -390,7 +391,7 @@ class NetherPortal implements IPortalGenerator {
                 ) {
                     continue; // no corners
                 } else if (y === 0 || y === yEnd || x === 0 || x === xEnd) {
-                    block = MinecraftBlockTypes.obsidian;
+                    block = MinecraftBlockTypes.Obsidian;
                 } else {
                     continue;
                 }
@@ -543,26 +544,26 @@ class EndPortal implements IPortalGenerator {
         for (let z = 0; z < 5; ++z) {
             for (let x = 0; x < 5; ++x) {
                 let rot = 0;
-                let blockType = MinecraftBlockTypes.air;
+                let blockType = MinecraftBlockTypes.Air;
                 if (x === 0 && z !== 0 && z !== 4) {
                     // west edge
-                    blockType = MinecraftBlockTypes.endPortalFrame;
+                    blockType = MinecraftBlockTypes.EndPortalFrame;
                     rot = 3;
                 } else if (x === 4 && z !== 0 && z !== 4) {
                     // east edge
-                    blockType = MinecraftBlockTypes.endPortalFrame;
+                    blockType = MinecraftBlockTypes.EndPortalFrame;
                     rot = 1;
                 } else if (z === 0 && x !== 0 && x !== 4) {
                     // south edge
-                    blockType = MinecraftBlockTypes.endPortalFrame;
+                    blockType = MinecraftBlockTypes.EndPortalFrame;
                     rot = 0;
                 } else if (z === 4 && x !== 0 && x !== 4) {
                     // north edge
-                    blockType = MinecraftBlockTypes.endPortalFrame;
+                    blockType = MinecraftBlockTypes.EndPortalFrame;
                     rot = 2;
                 } else if (this._dataSource.filledEyeCount === 12 && x >= 1 && z >= 1 && x <= 3 && z <= 3) {
                     // center
-                    blockType = MinecraftBlockTypes.endPortal;
+                    blockType = MinecraftBlockTypes.EndPortal;
                 } else {
                     continue;
                 }
@@ -571,7 +572,7 @@ class EndPortal implements IPortalGenerator {
 
                 if (block) {
                     block.setType(blockType);
-                    if (blockType === MinecraftBlockTypes.endPortalFrame) {
+                    if (blockType === MinecraftBlockTypes.EndPortalFrame) {
                         const perms = block.permutation.clone();
                         perms.withState('direction', rot);
                         perms.withState('end_portal_eye_bit', eyesToUse[i]);

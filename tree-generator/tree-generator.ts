@@ -14,7 +14,8 @@ import {
     bindDataSource,
     registerEditorExtension,
 } from '@minecraft/server-editor';
-import { BlockPermutation, MinecraftBlockTypes, Vector3 } from '@minecraft/server';
+import { BlockPermutation, Vector3 } from '@minecraft/server';
+import { MinecraftBlockTypes } from '@minecraft/vanilla-data';
 
 interface TreeToolSettings {
     height: number;
@@ -217,13 +218,13 @@ export class SimpleTree implements ITree {
 }
 
 function createLeaf1Block(leafType: string): BlockPermutation {
-    return BlockPermutation.resolve(MinecraftBlockTypes.leaves.id, {
+    return BlockPermutation.resolve(MinecraftBlockTypes.Leaves, {
         old_leaf_type: leafType,
     });
 }
 
 function createLeaf2Block(leafType: string): BlockPermutation {
-    return BlockPermutation.resolve(MinecraftBlockTypes.leaves2.id, {
+    return BlockPermutation.resolve(MinecraftBlockTypes.Leaves2, {
         new_leaf_type: leafType,
     });
 }
@@ -231,28 +232,28 @@ function createLeaf2Block(leafType: string): BlockPermutation {
 const TreeTypes = [
     {
         name: 'Oak',
-        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.oakLog.id), createLeaf1Block('oak')),
+        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.OakLog), createLeaf1Block('oak')),
     },
     {
         name: 'Spruce',
-        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.spruceLog.id), createLeaf1Block('spruce')),
+        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.SpruceLog), createLeaf1Block('spruce')),
     },
     {
         name: 'Birch',
-        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.birchLog.id), createLeaf1Block('birch')),
+        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.BirchLog), createLeaf1Block('birch')),
     },
     {
         name: 'Jungle',
-        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.jungleLog.id), createLeaf1Block('jungle')),
+        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.JungleLog), createLeaf1Block('jungle')),
     },
 
     {
         name: 'Acacia',
-        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.acaciaLog.id), createLeaf2Block('acacia')),
+        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.AcaciaLog), createLeaf2Block('acacia')),
     },
     {
         name: 'Dark Oak',
-        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.darkOakLog.id), createLeaf2Block('dark_oak')),
+        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.DarkOakLog), createLeaf2Block('dark_oak')),
     },
 ];
 
