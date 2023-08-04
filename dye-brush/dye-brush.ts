@@ -18,7 +18,7 @@ import {
     BlockVolumeUtils,
     BoundingBox,
     BoundingBoxUtils,
-    Color,
+    RGBA,
     CompoundBlockVolumeAction,
     Dimension,
     Direction,
@@ -91,7 +91,7 @@ export function getRotationCorrectedDirectionVector(rotationY: number, realDirec
 
 //#endregion
 
-const colorPalette = new Map<BrushColor, Color>([
+const colorPalette = new Map<BrushColor, RGBA>([
     [BrushColor.White, { red: 1, green: 1, blue: 1, alpha: 1 }],
     [BrushColor.Orange, { red: 0.95, green: 0.459, blue: 0, alpha: 1 }],
     [BrushColor.Magenta, { red: 0.94, green: 0, blue: 0.9, alpha: 1 }],
