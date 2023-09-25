@@ -8,10 +8,9 @@ import {
     bindDataSource,
     registerEditorExtension,
 } from '@minecraft/server-editor';
-import { DynamicPropertiesDefinition, EntityTypes, Vector3, system, world } from '@minecraft/server';
+import { Vector3, system } from '@minecraft/server';
 
 const storedLocationDynamicPropertyName = 'goto-mark:storedLocations'; // The key of the stored location dynamic property
-const storedLocationDynamicPropertyMaxSize = 2048; // The maximum size of the stored location dynamic property in bytes
 const storedLocationNameMaxLength = 16; // This is the maximum length of the name of a stored location
 const storedLocationsMax = 9; // The maximum number of stored locations
 
@@ -426,14 +425,3 @@ export function registerGotoMarkExtension() {
         }
     );
 }
-
-// Global run code - this executes once when the server is loaded
-// We attach some potential storage space to the player entity so we can make the stored
-// locations persistent - this can only be done at world-initialize time, so we need to do this
-// in the global execution scope
-//
-world.afterEvents.worldInitialize.subscribe(e => {
-    const def = new DynamicPropertiesDefinition();
-    def.defineString(storedLocationDynamicPropertyName, storedLocationDynamicPropertyMaxSize);
-    e.propertyRegistry.registerEntityTypeDynamicProperties(def, EntityTypes.get('minecraft:player'));
-});
