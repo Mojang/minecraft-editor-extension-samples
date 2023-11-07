@@ -7,7 +7,7 @@ import {
     KeyboardKey,
     registerEditorExtension,
 } from '@minecraft/server-editor';
-import { Player, Vector, Vector3, system } from '@minecraft/server';
+import { EasingType, Player, Vector, Vector3, system } from '@minecraft/server';
 
 function flyCameraToTarget(player: Player, viewTarget: Vector3, radius: number) {
     // This is imperfect and causes a visible pop.  Would be better if we could get the player's exact eye height
@@ -22,15 +22,20 @@ function flyCameraToTarget(player: Player, viewTarget: Vector3, radius: number) 
     const destPlayerLocation = Vector.subtract(destCameraLocation, eyeHeight);
     const easeTimeInSeconds = 1.5;
     // Unhook camera and have it start moving to the new location
-    player.runCommand(
-        `/camera @s set minecraft:free ease ${easeTimeInSeconds} in_out_quad pos ${destCameraLocation.x} ${destCameraLocation.y} ${destCameraLocation.z} rot ~ ~`
-    );
+    player.camera.setCamera('minecraft:free', {
+        rotation: { x: player.getRotation().x, y: player.getRotation().y },
+        location: { x: destCameraLocation.x, y: destCameraLocation.y, z: destCameraLocation.z },
+        easeOptions: {
+            easeTime: easeTimeInSeconds,
+            easeType: EasingType.InOutQuad,
+        },
+    });
     // Move the player to a location below our target to avoid it being in the way visually
     player.teleport(Vector.subtract(destPlayerLocation, { x: 0, y: 250, z: 0 }));
     system.runTimeout(() => {
         // Move the player to the final location and re-hook the camera to it
         player.teleport(destPlayerLocation);
-        player.runCommand('/camera @s clear');
+        player.camera.clear();
     }, easeTimeInSeconds * 20);
 }
 /**
@@ -48,7 +53,7 @@ export function registerCameraGrapple() {
             // exceptions thrown
             try {
                 const me = uiSession.extensionContext.player;
-                me.runCommand('/camera @s clear');
+                me.camera.clear();
             } catch (error) {
                 uiSession.log.error(
                     `The extension [${uiSession.extensionContext.extensionName}] requires the experimental camera toggle ON`
