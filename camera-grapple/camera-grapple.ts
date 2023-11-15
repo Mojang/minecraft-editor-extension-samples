@@ -1,3 +1,5 @@
+// Copyright (c) Mojang AB.  All rights reserved.
+
 import {
     ActionTypes,
     CursorControlMode,
@@ -7,36 +9,43 @@ import {
     KeyboardKey,
     registerEditorExtension,
 } from '@minecraft/server-editor';
-import { EasingType, Player, Vector, Vector3, system } from '@minecraft/server';
+import { EasingType, TicksPerSecond, Vector, Vector3, system } from '@minecraft/server';
 
-function flyCameraToTarget(player: Player, viewTarget: Vector3, radius: number) {
-    // This is imperfect and causes a visible pop.  Would be better if we could get the player's exact eye height
-    const eyeHeight = Vector.subtract(player.getHeadLocation(), player.location);
-    const viewVector = player.getViewDirection();
-    radius = Math.max(radius, 1);
-    // FOV in first_person.json is 66 degrees
-    const halfFOV = 66 / 2;
-    // Compute adjacent side of triangle (distance) when opposite side is radius
-    const distanceAway = radius / Math.tan((halfFOV * Math.PI) / 180);
-    const destCameraLocation = Vector.subtract(viewTarget, Vector.multiply(viewVector, distanceAway));
-    const destPlayerLocation = Vector.subtract(destCameraLocation, eyeHeight);
-    const easeTimeInSeconds = 1.5;
-    // Unhook camera and have it start moving to the new location
-    player.camera.setCamera('minecraft:free', {
-        rotation: { x: player.getRotation().x, y: player.getRotation().y },
-        location: { x: destCameraLocation.x, y: destCameraLocation.y, z: destCameraLocation.z },
-        easeOptions: {
-            easeTime: easeTimeInSeconds,
-            easeType: EasingType.InOutQuad,
-        },
-    });
-    // Move the player to a location below our target to avoid it being in the way visually
-    player.teleport(Vector.subtract(destPlayerLocation, { x: 0, y: 250, z: 0 }));
-    system.runTimeout(() => {
-        // Move the player to the final location and re-hook the camera to it
-        player.teleport(destPlayerLocation);
-        player.camera.clear();
-    }, easeTimeInSeconds * 20);
+interface GrappleStorage {
+    latestRunId?: number;
+}
+
+type GrappleSession = IPlayerUISession<GrappleStorage>;
+
+function flyCameraToTarget(uiSession: GrappleSession, viewTarget: Vector3, radius: number) {
+    if (uiSession.scratchStorage) {
+        const player = uiSession.extensionContext.player;
+        // This is imperfect and causes a visible pop.  Would be better if we could get the player's exact eye height
+        const eyeHeight = Vector.subtract(player.getHeadLocation(), player.location);
+        const viewVector = player.getViewDirection();
+        radius = Math.max(radius, 1);
+        // FOV in first_person.json is 66 degrees
+        const halfFOV = 66 / 2;
+        // Compute adjacent side of triangle (distance) when opposite side is radius
+        const distanceAway = radius / Math.tan((halfFOV * Math.PI) / 180);
+        const destCameraLocation = Vector.subtract(viewTarget, Vector.multiply(viewVector, distanceAway));
+        const destPlayerLocation = Vector.subtract(destCameraLocation, eyeHeight);
+        const easeTimeInSeconds = 1.5;
+        // Unhook camera and have it start moving to the new location
+        player.camera.setCamera('minecraft:free', {
+            rotation: { x: player.getRotation().x, y: player.getRotation().y },
+            location: { x: destCameraLocation.x, y: destCameraLocation.y, z: destCameraLocation.z },
+            easeOptions: {
+                easeTime: easeTimeInSeconds,
+                easeType: EasingType.InOutQuad,
+            },
+        });
+        uiSession.scratchStorage.latestRunId = system.runTimeout(() => {
+            // Move the player to the final location and re-hook the camera to it
+            player.teleport(destPlayerLocation);
+            player.camera.clear();
+        }, easeTimeInSeconds * TicksPerSecond);
+    }
 }
 /**
  * Provides a "Grapple" extension for quickly moving the player around the world
@@ -45,25 +54,16 @@ function flyCameraToTarget(player: Player, viewTarget: Vector3, radius: number) 
 export function registerCameraGrapple() {
     registerEditorExtension(
         'camera-grapple-sample',
-        uiSession => {
+        (uiSession: GrappleSession) => {
             uiSession.log.debug(`Initializing extension [${uiSession.extensionContext.extensionName}]`);
-
-            // Do a quick test for compatibility -- '/camera' is currently an experiment
-            // so if the experimental camera flag is NOT on for this world, we're going to see
-            // exceptions thrown
-            try {
-                const me = uiSession.extensionContext.player;
-                me.camera.clear();
-            } catch (error) {
-                uiSession.log.error(
-                    `The extension [${uiSession.extensionContext.extensionName}] requires the experimental camera toggle ON`
-                );
-                return [];
-            }
 
             const grappleAction = uiSession.actionManager.createAction({
                 actionType: ActionTypes.NoArgsAction,
                 onExecute: () => {
+                    // don't execute if there is already a command running as this can be visually disorienting
+                    if (uiSession.scratchStorage?.latestRunId) {
+                        return;
+                    }
                     let destBlockLoc: Vector3 | undefined = undefined;
                     const cursor = uiSession.extensionContext.cursor;
 
@@ -81,13 +81,17 @@ export function registerCameraGrapple() {
 
                     // Location of the center of the block
                     const viewTarget = Vector.add(destBlockLoc, { x: 0.5, y: 0.5, z: 0.5 });
-                    flyCameraToTarget(uiSession.extensionContext.player, viewTarget, 2);
+                    flyCameraToTarget(uiSession, viewTarget, 2);
                 },
             });
 
             const frameAction = uiSession.actionManager.createAction({
                 actionType: ActionTypes.NoArgsAction,
                 onExecute: () => {
+                    // don't execute if there is already a command running as this can be visually disorienting
+                    if (uiSession.scratchStorage?.latestRunId) {
+                        return;
+                    }
                     const selection = uiSession.extensionContext.selectionManager.selection;
                     if (selection.isEmpty) {
                         return;
@@ -101,7 +105,7 @@ export function registerCameraGrapple() {
                         halfSize.x * halfSize.x + halfSize.y * halfSize.y + halfSize.z * halfSize.z
                     );
 
-                    flyCameraToTarget(uiSession.extensionContext.player, viewTarget, radius);
+                    flyCameraToTarget(uiSession, viewTarget, radius);
                 },
             });
 
@@ -120,10 +124,14 @@ export function registerCameraGrapple() {
 
             return [];
         },
-        (uiSession: IPlayerUISession) => {
+        (uiSession: GrappleSession) => {
             uiSession.log.debug(
                 `Shutting down extension [${uiSession.extensionContext.extensionName}] for player [${uiSession.extensionContext.player.name}]`
             );
+            if (uiSession.scratchStorage?.latestRunId) {
+                system.clearRun(uiSession.scratchStorage.latestRunId);
+                uiSession.scratchStorage.latestRunId = undefined;
+            }
         },
         {
             description: '"Camera Grapple" Sample Extension',

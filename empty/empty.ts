@@ -1,3 +1,5 @@
+// Copyright (c) Mojang AB.  All rights reserved.
+
 import { registerEditorExtension } from '@minecraft/server-editor';
 
 /**

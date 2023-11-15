@@ -1,3 +1,5 @@
+// Copyright (c) Mojang AB.  All rights reserved.
+
 import { CursorTargetMode, IDisposable, ModalToolLifecycleEventPayload, Ray } from '@minecraft/server-editor';
 import {
     bindDataSource,
