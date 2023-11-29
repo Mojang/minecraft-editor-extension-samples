@@ -1,3 +1,5 @@
+// Copyright (c) Mojang AB.  All rights reserved.
+
 import { CursorTargetMode, IDisposable, ModalToolLifecycleEventPayload, Ray } from '@minecraft/server-editor';
 import {
     bindDataSource,
@@ -600,7 +602,7 @@ export function registerPortalGeneratorExtension() {
     registerEditorExtension<ExtensionStorage>(
         'portal-generator-sample',
         uiSession => {
-            uiSession.log.debug(`Initializing [${uiSession.extensionContext.extensionName}] extension`);
+            uiSession.log.debug(`Initializing [${uiSession.extensionContext.extensionInfo.name}] extension`);
 
             uiSession.scratchStorage = {};
 
@@ -610,7 +612,7 @@ export function registerPortalGeneratorExtension() {
             return [generator];
         },
         uiSession => {
-            uiSession.log.debug(`Shutting down [${uiSession.extensionContext.extensionName}] extension`);
+            uiSession.log.debug(`Shutting down [${uiSession.extensionContext.extensionInfo.name}] extension`);
         },
         {
             description: '"Portal Generator" Sample Extension',

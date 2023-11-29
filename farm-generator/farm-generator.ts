@@ -1,3 +1,5 @@
+// Copyright (c) Mojang AB.  All rights reserved.
+
 import {
     ActionTypes,
     EditorInputContext,
@@ -417,7 +419,7 @@ export function registerFarmGeneratorExtension() {
     registerEditorExtension(
         'FarmGenerator-sample',
         (uiSession: IPlayerUISession) => {
-            uiSession.log.debug(`Initializing [${uiSession.extensionContext.extensionName}] extension`);
+            uiSession.log.debug(`Initializing [${uiSession.extensionContext.extensionInfo.name}] extension`);
 
             // Add tool to tool rail
             const farmGeneratorTool = addFarmGeneratorTool(uiSession);
@@ -428,7 +430,7 @@ export function registerFarmGeneratorExtension() {
             return [];
         },
         (uiSession: IPlayerUISession) => {
-            uiSession.log.debug(`Initializing [${uiSession.extensionContext.extensionName}] extension`);
+            uiSession.log.debug(`Initializing [${uiSession.extensionContext.extensionInfo.name}] extension`);
         },
         {
             description: '"Farm Generator" Sample Extension',

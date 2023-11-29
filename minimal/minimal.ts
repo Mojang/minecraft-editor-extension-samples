@@ -1,3 +1,5 @@
+// Copyright (c) Mojang AB.  All rights reserved.
+
 import {
     ActionTypes,
     IPlayerUISession,
@@ -43,7 +45,7 @@ export function registerMinimalExtension() {
         // The uiSession object holds the context for the extension and the player
         uiSession => {
             uiSession.log.debug(
-                `Initializing extension [${uiSession.extensionContext.extensionName}] for player [${uiSession.extensionContext.player.name}]`
+                `Initializing extension [${uiSession.extensionContext.extensionInfo.name}] for player [${uiSession.extensionContext.player.name}]`
             );
 
             // Initialize the player specific, custom extension storage structure with whatever
@@ -131,7 +133,7 @@ export function registerMinimalExtension() {
         (uiSession: IPlayerUISession<PerPlayerStorage>) => {
             // Do any explicit cleanup when a player is leaving and the extension instance is shutting down
             uiSession.log.debug(
-                `Shutting down extension [${uiSession.extensionContext.extensionName}] for player [${uiSession.extensionContext.player.name}]`
+                `Shutting down extension [${uiSession.extensionContext.extensionInfo.name}] for player [${uiSession.extensionContext.player.name}]`
             );
         },
 

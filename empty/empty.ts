@@ -1,3 +1,5 @@
+// Copyright (c) Mojang AB.  All rights reserved.
+
 import { registerEditorExtension } from '@minecraft/server-editor';
 
 /**
@@ -9,14 +11,14 @@ export function registerEmptyExtension() {
         'empty-template-sample',
         uiSession => {
             uiSession.log.debug(
-                `Initializing extension [${uiSession.extensionContext.extensionName}] for player [${uiSession.extensionContext.player.name}]`
+                `Initializing extension [${uiSession.extensionContext.extensionInfo.name}] for player [${uiSession.extensionContext.player.name}]`
             );
             return [];
         },
 
         uiSession => {
             uiSession.log.debug(
-                `Shutting down extension [${uiSession.extensionContext.extensionName}] for player [${uiSession.extensionContext.player.name}]`
+                `Shutting down extension [${uiSession.extensionContext.extensionInfo.name}] for player [${uiSession.extensionContext.player.name}]`
             );
         },
         {
