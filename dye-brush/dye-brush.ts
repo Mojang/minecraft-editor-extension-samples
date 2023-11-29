@@ -1,3 +1,5 @@
+// Copyright (c) Mojang AB.  All rights reserved.
+
 import {
     ActionTypes,
     bindDataSource,
@@ -322,7 +324,7 @@ export function registerDyeBrushExtension() {
         'dye-brush-sample',
 
         (uiSession: IPlayerUISession<DyeBrushStorage>) => {
-            uiSession.log.debug(`Initializing extension [${uiSession.extensionContext.extensionName}]`);
+            uiSession.log.debug(`Initializing extension [${uiSession.extensionContext.extensionInfo.name}]`);
 
             const previewSelection = uiSession.extensionContext.selectionManager.create();
             previewSelection.visible = true;
@@ -341,7 +343,7 @@ export function registerDyeBrushExtension() {
         },
 
         (uiSession: IPlayerUISession<DyeBrushStorage>) => {
-            uiSession.log.debug(`Shutting down extension [${uiSession.extensionContext.extensionName}] `);
+            uiSession.log.debug(`Shutting down extension [${uiSession.extensionContext.extensionInfo.name}] `);
         },
         {
             description: '"Dye Brush" Sample Extension',

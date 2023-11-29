@@ -1,3 +1,5 @@
+// Copyright (c) Mojang AB.  All rights reserved.
+
 import {
     ActionTypes,
     EditorInputContext,
@@ -426,7 +428,7 @@ export function registerTreeGeneratorExtension() {
     registerEditorExtension(
         'TreeGenerator-sample',
         (uiSession: IPlayerUISession) => {
-            uiSession.log.debug(`Initializing [${uiSession.extensionContext.extensionName}] extension`);
+            uiSession.log.debug(`Initializing [${uiSession.extensionContext.extensionInfo.name}] extension`);
 
             // Add extension tool to tool rail
             const tool = addTool(uiSession);
@@ -437,7 +439,7 @@ export function registerTreeGeneratorExtension() {
             return [];
         },
         (uiSession: IPlayerUISession) => {
-            uiSession.log.debug(`Shutting down [${uiSession.extensionContext.extensionName}] extension`);
+            uiSession.log.debug(`Shutting down [${uiSession.extensionContext.extensionInfo.name}] extension`);
         },
         {
             description: '"Tree Generator" Sample Extension',
