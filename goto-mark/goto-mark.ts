@@ -7,14 +7,31 @@ import {
     IPlayerUISession,
     IPropertyPane,
     ModalToolLifecycleEventPayload,
+    UserDefinedTransactionHandle,
     bindDataSource,
     registerEditorExtension,
+    registerUserDefinedTransactionHandler,
 } from '@minecraft/server-editor';
 import { Vector3, system } from '@minecraft/server';
+
+function stringFromException(e: unknown): string {
+    if (typeof e === 'string') {
+        return e;
+        // eslint-disable-next-line unicorn/no-null
+    } else if (typeof e === 'object' && e !== null && 'message' in e) {
+        return e.message as string;
+    }
+    return 'Unknown exception';
+}
 
 const storedLocationDynamicPropertyName = 'goto-mark:storedLocations'; // The key of the stored location dynamic property
 const storedLocationNameMaxLength = 16; // This is the maximum length of the name of a stored location
 const storedLocationsMax = 9; // The maximum number of stored locations
+
+type GotoTeleportTransactionPayload = {
+    current: Vector3;
+    destination: Vector3;
+};
 
 // The stored location data structure that represents each of the stored locations
 // this is also the JSON format that is stored in the dynamic property
@@ -48,6 +65,8 @@ type ExtensionStorage = {
     locationPane?: IPropertyPane; // The location pane
 
     storedLocations: LocationData[]; // The list of stored locations
+
+    transactionHandler: UserDefinedTransactionHandle<GotoTeleportTransactionPayload>; // The transaction handler for the extension
 };
 
 // Handy helper to turn a Vector3 into a pretty string
@@ -64,6 +83,30 @@ function vector3Equals(vec1: Vector3, vec2: Vector3): boolean {
 function vector3Truncate(vec: Vector3): Vector3 {
     const blockLocation: Vector3 = { x: Math.floor(vec.x), y: Math.floor(vec.y), z: Math.floor(vec.z) };
     return blockLocation;
+}
+
+function createTransaction(uiSession: IPlayerUISession<ExtensionStorage>, current: Vector3, destination: Vector3) {
+    const transactionPayload: GotoTeleportTransactionPayload = {
+        current,
+        destination,
+    };
+    if (!uiSession.scratchStorage) {
+        return;
+    }
+
+    uiSession.extensionContext.transactionManager.openTransaction('goto position');
+    uiSession.scratchStorage.transactionHandler.addUserDefinedTransaction(transactionPayload, 'Goto(Teleport)');
+    uiSession.extensionContext.transactionManager.commitOpenTransaction();
+}
+
+function teleportTo(uiSession: IPlayerUISession<ExtensionStorage>, destination: Vector3) {
+    createTransaction(uiSession, uiSession.extensionContext.player.location, destination);
+    uiSession.log.info(`Teleporting to location ${vector3ToString(destination)}`);
+    try {
+        uiSession.extensionContext.player.teleport(destination);
+    } catch (e) {
+        uiSession.log.error(`Teleport failed: ${stringFromException(e)}`);
+    }
 }
 
 // Add the extension to the tool rail and give it an icon
@@ -136,10 +179,9 @@ function buildParentPane(uiSession: IPlayerUISession<ExtensionStorage>, storage:
                     uiSession.log.error('An error occurred: No UI pane datasource could be found');
                     return;
                 }
-                const panelLocation = storage.parentPaneDataSource.playerLocation;
-                uiSession.extensionContext.player.teleport(panelLocation);
 
-                uiSession.log.info(`Teleporting to location ${vector3ToString(panelLocation)}`);
+                const panelLocation = storage.parentPaneDataSource.playerLocation;
+                teleportTo(uiSession, panelLocation);
             },
         }),
         {
@@ -185,8 +227,7 @@ function buildParentPane(uiSession: IPlayerUISession<ExtensionStorage>, storage:
                 if (!spawnLocation) {
                     uiSession.log.error('Player Spawn Location is not yet set');
                 } else {
-                    uiSession.log.info(`Jumping to Spawn Location ${vector3ToString(spawnLocation)}`);
-                    uiSession.extensionContext.player.teleport(spawnLocation);
+                    teleportTo(uiSession, spawnLocation);
                 }
             },
         }),
@@ -271,8 +312,7 @@ function buildLocationPane(
                 }
 
                 const destination = storage.storedLocations[currentSelection].location;
-                uiSession.log.info(`Jumping to location ${vector3ToString(destination)}`);
-                uiSession.extensionContext.player.teleport(destination);
+                teleportTo(uiSession, destination);
             },
         }),
         {
@@ -381,6 +421,27 @@ export function registerGotoMarkExtension() {
             const storage: ExtensionStorage = {
                 previousLocation: uiSession.extensionContext.player.location,
                 storedLocations: [],
+                transactionHandler: registerUserDefinedTransactionHandler<GotoTeleportTransactionPayload>(
+                    uiSession.extensionContext.transactionManager,
+                    (payload: GotoTeleportTransactionPayload) => {
+                        // undo handler
+                        uiSession.log.info(`Teleporting to location ${vector3ToString(payload.current)}`);
+                        try {
+                            uiSession.extensionContext.player.teleport(payload.current);
+                        } catch (e) {
+                            uiSession.log.error(`Teleport failed: ${stringFromException(e)}`);
+                        }
+                    },
+                    (payload: GotoTeleportTransactionPayload) => {
+                        // redo handler
+                        uiSession.log.info(`Teleporting to location ${vector3ToString(payload.destination)}`);
+                        try {
+                            uiSession.extensionContext.player.teleport(payload.destination);
+                        } catch (e) {
+                            uiSession.log.error(`Teleport failed: ${stringFromException(e)}`);
+                        }
+                    }
+                ),
             };
 
             const me = uiSession.extensionContext.player;
