@@ -14,8 +14,6 @@ import {
 } from '@minecraft/server-editor';
 import { Vector3, system } from '@minecraft/server';
 
-// This is exposed in @minecraft/core-utilities, but it's not a public NPM module,
-// so if I import it from there, this sample won't compile in the Editor Starter Kit
 function stringFromException(e: unknown): string {
     if (typeof e === 'string') {
         return e;
