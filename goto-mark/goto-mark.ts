@@ -11,18 +11,9 @@ import {
     bindDataSource,
     registerEditorExtension,
     registerUserDefinedTransactionHandler,
+    stringFromException,
 } from '@minecraft/server-editor';
 import { Vector3, system } from '@minecraft/server';
-
-function stringFromException(e: unknown): string {
-    if (typeof e === 'string') {
-        return e;
-        // eslint-disable-next-line unicorn/no-null
-    } else if (typeof e === 'object' && e !== null && 'message' in e) {
-        return e.message as string;
-    }
-    return 'Unknown exception';
-}
 
 const storedLocationDynamicPropertyName = 'goto-mark:storedLocations'; // The key of the stored location dynamic property
 const storedLocationNameMaxLength = 16; // This is the maximum length of the name of a stored location
@@ -95,7 +86,7 @@ function createTransaction(uiSession: IPlayerUISession<ExtensionStorage>, curren
     }
 
     uiSession.extensionContext.transactionManager.openTransaction('goto position');
-    uiSession.scratchStorage.transactionHandler.addUserDefinedTransaction(transactionPayload, 'Goto(Teleport)');
+    uiSession.scratchStorage.transactionHandler.addUserDefinedOperation(transactionPayload, 'Goto(Teleport)');
     uiSession.extensionContext.transactionManager.commitOpenTransaction();
 }
 
