@@ -1,5 +1,6 @@
 // Copyright (c) Mojang AB.  All rights reserved.
 
+import { VECTOR3_ZERO } from '@minecraft/math';
 import {
     ActionTypes,
     EditorInputContext,
@@ -41,7 +42,7 @@ type AnimalSettingsType = {
 };
 
 function getRandomInt(upper: number) {
-    return Math.ceil(Math.random() * (upper + 1));
+    return Math.floor(Math.random() * (upper + 1));
 }
 
 function fenceTypeToBlockType(fenceType: number): string {
@@ -80,6 +81,7 @@ const buildFarm = (
     player: Player,
     settings: SettingsType
 ) => {
+    let didPlaceAnimal = false;
     for (let i = 0; i < width; i++) {
         for (let j = length - 1; j > -1; j--) {
             const xOffset = i * x;
@@ -102,14 +104,28 @@ const buildFarm = (
                 blockAbove?.setType(fenceTypeToBlockType(settings.fenceType));
             } else if (possibleAnimals.length > 0 && getRandomInt(5) === 5) {
                 const animal = getRandomInt(possibleAnimals.length - 1);
-                const entityType = possibleAnimals[animal - 1];
-                player.dimension.spawnEntity(entityType, blockAbove?.location ?? { x: 0, y: 0, z: 0 });
+                const entityType = possibleAnimals[animal];
+                player.dimension.spawnEntity(entityType, blockAbove?.location ?? VECTOR3_ZERO);
+                didPlaceAnimal = true;
             } else if (!block?.isLiquid && possibleCrops.length > 0) {
                 const crop = getRandomInt(possibleCrops.length - 1);
-                const blockType = possibleCrops[crop - 1];
+                const blockType = possibleCrops[crop];
                 blockAbove?.setType(blockType);
             }
         }
+    }
+
+    // Guarantee there is at least one animal spawned if we haven't placed one yet and there is room to place one
+    if (!didPlaceAnimal && possibleAnimals.length > 0 && width > 2 && length > 2) {
+        const locationAbove: Vector3 = {
+            x: targetCorner.x + x,
+            y: targetCorner.y + 1,
+            z: targetCorner.z + z,
+        };
+        const blockAbove = player.dimension.getBlock(locationAbove);
+        const animal = getRandomInt(possibleAnimals.length - 1);
+        const entityType = possibleAnimals[animal];
+        player.dimension.spawnEntity(entityType, blockAbove?.location ?? VECTOR3_ZERO);
     }
 };
 

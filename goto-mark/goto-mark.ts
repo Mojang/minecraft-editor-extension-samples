@@ -3,6 +3,7 @@
 import {
     ActionTypes,
     IDropdownItem,
+    IDropdownPropertyItem,
     IModalTool,
     IPlayerUISession,
     IPropertyPane,
@@ -51,9 +52,9 @@ type ExtensionStorage = {
 
     parentPaneDataSource?: ParentPaneDataSourceType; // The data source for the parent pane
     parentPane?: IPropertyPane; // The parent pane
+    dropdownMenu?: IDropdownPropertyItem<LocationPaneDataSourceType, 'currentSelection'>; // The dropdown
 
     locationPaneDataSource?: LocationPaneDataSourceType; // The data source for the location pane
-    locationPane?: IPropertyPane; // The location pane
 
     storedLocations: LocationData[]; // The list of stored locations
 
@@ -74,6 +75,17 @@ function vector3Equals(vec1: Vector3, vec2: Vector3): boolean {
 function vector3Truncate(vec: Vector3): Vector3 {
     const blockLocation: Vector3 = { x: Math.floor(vec.x), y: Math.floor(vec.y), z: Math.floor(vec.z) };
     return blockLocation;
+}
+
+function mapDropdownItems(storage: ExtensionStorage): IDropdownItem[] {
+    return storage.storedLocations.map((v, index): IDropdownItem => {
+        const item: IDropdownItem = {
+            displayAltText: `${index + 1}: ${v.name} (${vector3ToString(v.location)})`,
+            displayStringId: 'NO_ID',
+            value: index,
+        };
+        return item;
+    });
 }
 
 function createTransaction(uiSession: IPlayerUISession<ExtensionStorage>, current: Vector3, destination: Vector3) {
@@ -242,19 +254,9 @@ function buildLocationPane(
     storage: ExtensionStorage,
     initialSelection: number
 ) {
-    let unhideParent = false;
-
     if (!storage.parentPane) {
         uiSession.log.error('An error occurred: No UI pane could be found');
         return;
-    }
-
-    if (storage.locationPane) {
-        storage.parentPane?.hide();
-        storage.parentPane?.removePropertyPane(storage.locationPane);
-        storage.locationPane = undefined;
-        storage.locationPaneDataSource = undefined;
-        unhideParent = true;
     }
 
     const locationPane = storage.parentPane.createPropertyPane({
@@ -268,16 +270,9 @@ function buildLocationPane(
     };
     storage.locationPaneDataSource = bindDataSource(locationPane, initialPaneData);
 
-    const dropdownItems = storage.storedLocations.map((v, index): IDropdownItem => {
-        const item: IDropdownItem = {
-            displayAltText: `${index + 1}: ${v.name} (${vector3ToString(v.location)})`,
-            displayStringId: 'NO_ID',
-            value: index,
-        };
-        return item;
-    });
+    const dropdownItems = mapDropdownItems(storage);
 
-    locationPane.addDropdown(storage.locationPaneDataSource, 'currentSelection', {
+    storage.dropdownMenu = locationPane.addDropdown(storage.locationPaneDataSource, 'currentSelection', {
         titleStringId: 'sample.gotomark.pane.locationpane.dropdownLabel',
         titleAltText: 'Stored Location',
         dropdownItems: dropdownItems,
@@ -333,7 +328,11 @@ function buildLocationPane(
 
                 storeLocationsToPlayer(uiSession, storage);
 
-                buildLocationPane(uiSession, storage, 0);
+                const dropdownItems = mapDropdownItems(storage);
+                storage.dropdownMenu?.updateDropdownItems(
+                    dropdownItems,
+                    storage.locationPaneDataSource.currentSelection
+                );
             },
         }),
         {
@@ -378,7 +377,8 @@ function buildLocationPane(
 
                 const newSelectionIndex = storage.storedLocations.length - 1;
 
-                buildLocationPane(uiSession, storage, newSelectionIndex);
+                const dropdownItems = mapDropdownItems(storage);
+                storage.dropdownMenu?.updateDropdownItems(dropdownItems, newSelectionIndex);
             },
         }),
         {
@@ -386,14 +386,6 @@ function buildLocationPane(
             titleAltText: 'Store Current Location as...',
         }
     );
-
-    locationPane.show();
-
-    if (unhideParent) {
-        storage.parentPane?.show();
-    }
-
-    storage.locationPane = locationPane;
 }
 
 function storeLocationsToPlayer(uiSession: IPlayerUISession<ExtensionStorage>, storage: ExtensionStorage) {
