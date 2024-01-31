@@ -17,7 +17,6 @@ import {
 } from '@minecraft/server-editor';
 import {
     BlockVolume,
-    BlockVolumeUtils,
     BoundingBox,
     BoundingBoxUtils,
     RGBA,
@@ -217,8 +216,8 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
         };
         const to: Vector3 = { x: from.x + toOffset.x, y: from.y + toOffset.y, z: from.z + toOffset.z };
 
-        const blockVolume: BlockVolume = { from: from, to: to };
-        const bounds = BlockVolumeUtils.getBoundingBox(blockVolume);
+        const blockVolume = new BlockVolume(from, to);
+        const bounds = blockVolume.getBoundingBox();
         if (uiSession.scratchStorage.lastVolumePlaced) {
             if (BoundingBoxUtils.equals(uiSession.scratchStorage.lastVolumePlaced, bounds)) {
                 return;
