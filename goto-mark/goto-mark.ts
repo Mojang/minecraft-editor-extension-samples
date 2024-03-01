@@ -322,7 +322,9 @@ function buildLocationPane(
                     uiSession.log.error('No stored locations to delete');
                     return;
                 }
-                const locationName = storage.storedLocations[currentSelection].name;
+                const locationData = storage.storedLocations[currentSelection];
+                const locationName = locationData.name;
+
                 uiSession.log.info(`Deleting stored location name "${locationName}"`);
                 storage.storedLocations.splice(currentSelection, 1);
 
@@ -371,7 +373,10 @@ function buildLocationPane(
                 }
 
                 uiSession.log.info(`Adding Location ${vector3ToString(currentLocation)} as "${newName}"`);
-                storage.storedLocations.push({ name: newName, location: currentLocation });
+                storage.storedLocations.push({
+                    name: newName,
+                    location: currentLocation,
+                });
 
                 storeLocationsToPlayer(uiSession, storage);
 
@@ -434,6 +439,7 @@ export function registerGotoMarkExtension() {
                     uiSession.log.info('No stored locations found during initialization');
                 } else {
                     const fetchedLocationsArray = JSON.parse(fetchedLocationsString) as LocationData[];
+
                     if (fetchedLocationsArray) {
                         storage.storedLocations = fetchedLocationsArray;
                     }
