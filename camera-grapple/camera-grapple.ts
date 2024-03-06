@@ -9,7 +9,8 @@ import {
     KeyboardKey,
     registerEditorExtension,
 } from '@minecraft/server-editor';
-import { EasingType, TicksPerSecond, Vector, Vector3, system } from '@minecraft/server';
+import { EasingType, TicksPerSecond, Vector3, system } from '@minecraft/server';
+import { Vector3Utils } from '@minecraft/math';
 
 interface GrappleStorage {
     latestRunId?: number;
@@ -21,15 +22,15 @@ function flyCameraToTarget(uiSession: GrappleSession, viewTarget: Vector3, radiu
     if (uiSession.scratchStorage) {
         const player = uiSession.extensionContext.player;
         // This is imperfect and causes a visible pop.  Would be better if we could get the player's exact eye height
-        const eyeHeight = Vector.subtract(player.getHeadLocation(), player.location);
+        const eyeHeight = Vector3Utils.subtract(player.getHeadLocation(), player.location);
         const viewVector = player.getViewDirection();
         radius = Math.max(radius, 1);
         // FOV in first_person.json is 66 degrees
         const halfFOV = 66 / 2;
         // Compute adjacent side of triangle (distance) when opposite side is radius
         const distanceAway = radius / Math.tan((halfFOV * Math.PI) / 180);
-        const destCameraLocation = Vector.subtract(viewTarget, Vector.multiply(viewVector, distanceAway));
-        const destPlayerLocation = Vector.subtract(destCameraLocation, eyeHeight);
+        const destCameraLocation = Vector3Utils.subtract(viewTarget, Vector3Utils.scale(viewVector, distanceAway));
+        const destPlayerLocation = Vector3Utils.subtract(destCameraLocation, eyeHeight);
         const easeTimeInSeconds = 1.5;
         // Unhook camera and have it start moving to the new location
         player.camera.setCamera('minecraft:free', {
@@ -80,7 +81,7 @@ export function registerCameraGrapple() {
                     }
 
                     // Location of the center of the block
-                    const viewTarget = Vector.add(destBlockLoc, { x: 0.5, y: 0.5, z: 0.5 });
+                    const viewTarget = Vector3Utils.add(destBlockLoc, { x: 0.5, y: 0.5, z: 0.5 });
                     flyCameraToTarget(uiSession, viewTarget, 2);
                 },
             });
@@ -98,9 +99,9 @@ export function registerCameraGrapple() {
                     }
 
                     const bounds = selection.getBoundingBox();
-                    bounds.max = Vector.add(bounds.max, { x: 1, y: 1, z: 1 });
-                    const halfSize = Vector.multiply(Vector.subtract(bounds.max, bounds.min), 0.5);
-                    const viewTarget = Vector.add(bounds.min, halfSize);
+                    bounds.max = Vector3Utils.add(bounds.max, { x: 1, y: 1, z: 1 });
+                    const halfSize = Vector3Utils.scale(Vector3Utils.subtract(bounds.max, bounds.min), 0.5);
+                    const viewTarget = Vector3Utils.add(bounds.min, halfSize);
                     const radius = Math.sqrt(
                         halfSize.x * halfSize.x + halfSize.y * halfSize.y + halfSize.z * halfSize.z
                     );
