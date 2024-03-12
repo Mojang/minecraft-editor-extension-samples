@@ -25,9 +25,9 @@ import {
     Direction,
     EntityColorComponent,
     Player,
-    Vector,
     Vector3,
 } from '@minecraft/server';
+import { Vector3Utils, VECTOR3_UP } from '@minecraft/math';
 
 enum BrushColor {
     White = 0,
@@ -197,15 +197,15 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
         const rotationY = uiSession.extensionContext.player.getRotation().y;
         const directionRight = getRotationCorrectedDirectionVector(rotationY, Direction.East);
         const directionForward = getRotationCorrectedDirectionVector(rotationY, Direction.South);
-        const relativeDirection = Vector.add(Vector.add(directionRight, directionForward), Vector.up);
+        const relativeDirection = Vector3Utils.add(Vector3Utils.add(directionRight, directionForward), VECTOR3_UP);
 
         const sizeHalf = Math.floor(props.size / 2);
-        let fromOffset = Vector.multiply(relativeDirection, -sizeHalf);
-        const toOffset = Vector.multiply(relativeDirection, props.size - 1);
+        let fromOffset = Vector3Utils.scale(relativeDirection, -sizeHalf);
+        const toOffset = Vector3Utils.scale(relativeDirection, props.size - 1);
 
         const isEven = props.size % 2 === 0;
         if (isEven) {
-            fromOffset = Vector.add(fromOffset, Vector.up);
+            fromOffset = Vector3Utils.add(fromOffset, VECTOR3_UP);
         }
 
         const location = targetBlock.location;
