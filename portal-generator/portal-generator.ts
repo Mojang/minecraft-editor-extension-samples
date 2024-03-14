@@ -1,6 +1,6 @@
 // Copyright (c) Mojang AB.  All rights reserved.
 
-import { CursorTargetMode, IDisposable, ModalToolLifecycleEventPayload, Ray } from '@minecraft/server-editor';
+import { CursorTargetMode, IDisposable, Ray } from '@minecraft/server-editor';
 import {
     bindDataSource,
     IPlayerUISession,
@@ -97,15 +97,6 @@ class PortalGenerator implements IDisposable {
             tooltipAltText: 'Creates portals',
         });
 
-        // Set up an activation handler to show/hide the pane when the tool is activated/deactivated
-        tool.onModalToolActivation.subscribe((eventData: ModalToolLifecycleEventPayload) => {
-            if (eventData.isActiveTool) {
-                this._pane?.show();
-            } else {
-                this._pane?.hide();
-            }
-        });
-
         // Register a global shortcut (CTRL + SHIFT + P) to select the tool
         const toolToggleAction = uiSession.actionManager.createAction({
             actionType: ActionTypes.NoArgsAction,
@@ -140,8 +131,10 @@ class PortalGenerator implements IDisposable {
         // Build the UI components (and the sub pane with the options)
         this.buildPane(uiSession);
 
-        // Hide until the tool is activated
-        this._pane?.hide();
+        if (this._pane && this._dataSource) {
+            tool.bindPropertyPane(this._pane);
+            this.activatePortalGenerator(uiSession, this._dataSource.portalType);
+        }
     }
 
     teardown(): void {}
@@ -187,8 +180,6 @@ class PortalGenerator implements IDisposable {
         this._pane = pane;
         this._endPortal.parentPane = pane;
         this._netherPortal.parentPane = pane;
-
-        this.activatePortalGenerator(uiSession, this._dataSource?.portalType);
     }
 
     activatePortalGenerator(uiSession: PortalGeneratorSession, portalType: PortalType): void {

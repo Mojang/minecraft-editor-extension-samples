@@ -7,7 +7,6 @@ import {
     IModalTool,
     IPlayerUISession,
     IPropertyPane,
-    ModalToolLifecycleEventPayload,
     UserDefinedTransactionHandle,
     bindDataSource,
     registerEditorExtension,
@@ -113,8 +112,7 @@ function teleportTo(uiSession: IPlayerUISession<ExtensionStorage>, destination: 
 }
 
 // Add the extension to the tool rail and give it an icon
-// Also, set up an activation handler to show/hide the pane when the tool is activated/deactivated
-function addExtensionTool(uiSession: IPlayerUISession<ExtensionStorage>, storage: ExtensionStorage): IModalTool {
+function addExtensionTool(uiSession: IPlayerUISession<ExtensionStorage>): IModalTool {
     const tool = uiSession.toolRail.addTool({
         displayAltText: 'Goto Mark',
         displayStringId: 'sample.gotomark.tool.title',
@@ -122,15 +120,6 @@ function addExtensionTool(uiSession: IPlayerUISession<ExtensionStorage>, storage
         tooltipAltText: 'Set or Jump to a stored location',
         tooltipStringId: 'sample.gotomark.tool.tooltip',
     });
-
-    tool.onModalToolActivation.subscribe((eventData: ModalToolLifecycleEventPayload) => {
-        if (eventData.isActiveTool) {
-            storage.parentPane?.show();
-        } else {
-            storage.parentPane?.hide();
-        }
-    });
-
     return tool;
 }
 
@@ -451,8 +440,9 @@ export function registerGotoMarkExtension() {
                 uiSession.log.info('No stored locations found during initialization');
             }
 
-            storage.tool = addExtensionTool(uiSession, storage);
-            buildParentPane(uiSession, storage);
+            storage.tool = addExtensionTool(uiSession);
+            const pane = buildParentPane(uiSession, storage);
+            storage.tool.bindPropertyPane(pane);
 
             uiSession.scratchStorage = storage;
 

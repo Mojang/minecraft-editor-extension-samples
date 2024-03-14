@@ -2,6 +2,8 @@
 
 import {
     ActionTypes,
+    CoreMenuType,
+    IMenu,
     IPlayerUISession,
     PropertyBag,
     bindDataSource,
@@ -99,28 +101,36 @@ export function registerMinimalExtension() {
                 visible: true,
             });
 
-            // Create a menu entry and add it to the main menu along the top
-            const extensionMenu = uiSession.createMenu({
-                displayStringId: 'sample.minimal.menu.title',
-                name: 'My Extension',
-            });
+            // Try to get predefined top level core menu
+            uiSession.menuBar
+                .getMenu(CoreMenuType.Extensions)
+                .then((coreMenu: IMenu) => {
+                    // Create a menu entry in the menu bar Core menu
+                    const extensionMenu = coreMenu.addItem({
+                        displayStringId: 'sample.minimal.menu.title',
+                        name: 'My Extension',
+                    });
 
-            // Adds a child menu item to show the property pane
-            // Note - we're creating an action too, which can be executed when the menu
-            // item is selected
-            extensionMenu.addItem(
-                {
-                    displayStringId: 'sample.minimal.menu.showpane',
-                    name: 'Show My Property Pane',
-                },
-                uiSession.actionManager.createAction({
-                    actionType: ActionTypes.NoArgsAction,
-                    onExecute: () => {
-                        // make sure we show the property pane (in case you might have closed it)
-                        extensionPane.show();
-                    },
+                    // Adds a child menu item to show the property pane
+                    // Note - we're creating an action too, which can be executed when the menu
+                    // item is selected
+                    extensionMenu.addItem(
+                        {
+                            displayStringId: 'sample.minimal.menu.showpane',
+                            name: 'Show My Property Pane',
+                        },
+                        uiSession.actionManager.createAction({
+                            actionType: ActionTypes.NoArgsAction,
+                            onExecute: () => {
+                                // make sure we show the property pane (in case you might have closed it)
+                                extensionPane.show();
+                            },
+                        })
+                    );
                 })
-            );
+                .catch((error: Error) => {
+                    uiSession.log.error(error.message);
+                });
 
             // Normally we return a collection of IDisposable objects that the extension system will clean
             // up and dispose of on shutdown.  We don't have any in this example, so let's just return
