@@ -8,7 +8,6 @@ import {
     IPlayerUISession,
     InputModifier,
     KeyboardKey,
-    ModalToolLifecycleEventPayload,
     MouseActionType,
     MouseInputType,
     MouseProps,
@@ -379,18 +378,6 @@ function addFarmGeneratorSettingsPane(uiSession: IPlayerUISession, tool: IModalT
     });
 
     tool.bindPropertyPane(windowPane);
-    tool.bindPropertyPane(cropPane);
-    tool.bindPropertyPane(animalPane);
-
-    tool.onModalToolActivation.subscribe((eventData: ModalToolLifecycleEventPayload) => {
-        if (eventData.isActiveTool) {
-            windowPane.show();
-        } else {
-            windowPane.hide();
-        }
-    });
-
-    windowPane.hide();
 
     return settings;
 }
