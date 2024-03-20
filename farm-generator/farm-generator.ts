@@ -103,7 +103,9 @@ const buildFarm = (
             } else if (possibleAnimals.length > 0 && getRandomInt(5) === 5) {
                 const animal = getRandomInt(possibleAnimals.length - 1);
                 const entityType = possibleAnimals[animal];
-                player.dimension.spawnEntity(entityType, blockAbove?.location ?? VECTOR3_ZERO);
+                player.dimension.spawnEntity(entityType, blockAbove?.location ?? VECTOR3_ZERO, {
+                    initialPersistence: true,
+                });
                 didPlaceAnimal = true;
             } else if (!block?.isLiquid && possibleCrops.length > 0) {
                 const crop = getRandomInt(possibleCrops.length - 1);
@@ -123,7 +125,7 @@ const buildFarm = (
         const blockAbove = player.dimension.getBlock(locationAbove);
         const animal = getRandomInt(possibleAnimals.length - 1);
         const entityType = possibleAnimals[animal];
-        player.dimension.spawnEntity(entityType, blockAbove?.location ?? VECTOR3_ZERO);
+        player.dimension.spawnEntity(entityType, blockAbove?.location ?? VECTOR3_ZERO, { initialPersistence: true });
     }
 };
 
