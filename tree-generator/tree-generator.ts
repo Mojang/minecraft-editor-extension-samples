@@ -396,21 +396,26 @@ function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
  * Create a new tool rail item for tree generator
  */
 function addTool(uiSession: IPlayerUISession) {
-    const tool = uiSession.toolRail.addTool({
-        displayStringId: 'sample.treegenerator.tool.title',
-        displayAltText: 'Tree Generator (CTRL + SHIFT + T)',
-        icon: 'pack://textures/tree-generator.png',
-        tooltipStringId: 'sample.treegenerator.tool.tooltip',
-        tooltipAltText: 'Click to place trees!',
-    });
-
-    // Register a global shortcut to select the tool
+    // Create action
     const toolToggleAction = uiSession.actionManager.createAction({
         actionType: ActionTypes.NoArgsAction,
         onExecute: () => {
             uiSession.toolRail.setSelectedOptionId(tool.id, true);
         },
     });
+
+    const tool = uiSession.toolRail.addTool(
+        {
+            displayStringId: 'sample.treegenerator.tool.title',
+            displayAltText: 'Tree Generator (CTRL + SHIFT + T)',
+            icon: 'pack://textures/tree-generator.png',
+            tooltipStringId: 'sample.treegenerator.tool.tooltip',
+            tooltipAltText: 'Click to place trees!',
+        },
+        toolToggleAction
+    );
+
+    // Register a global shortcut to select the tool
     uiSession.inputManager.registerKeyBinding(
         EditorInputContext.GlobalToolMode,
         toolToggleAction,

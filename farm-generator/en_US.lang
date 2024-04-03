@@ -2,7 +2,7 @@
 ##
 ## Note, trailing spaces will NOT be trimmed. If you want room between the end of the string and the start of a
 ## comment on the same line, use TABs.
-sample.farmgenerator.tool.title=Farm Generator (CTRL + SHIFT + F)
+sample.farmgenerator.tool.title=Farm Generator
 sample.farmgenerator.tool.tooltip=Quickly create a custom farm
 sample.farmgenerator.pane.title=Farm Generator
 sample.farmgenerator.pane.length=Length
