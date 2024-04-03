@@ -88,22 +88,27 @@ class PortalGenerator implements IDisposable {
     }
 
     initialize(uiSession: PortalGeneratorSession, storage: ExtensionStorage) {
-        // Add the extension to the tool rail and give it an icon
-        const tool = uiSession.toolRail.addTool({
-            displayStringId: 'sample.portalgenerator.title',
-            displayAltText: 'Portal Generator (CTRL + SHIFT + P)',
-            icon: 'pack://textures/portal-generator.png',
-            tooltipStringId: 'sample.portalgenerator.tooltip',
-            tooltipAltText: 'Creates portals',
-        });
-
-        // Register a global shortcut (CTRL + SHIFT + P) to select the tool
+        // Create Action
         const toolToggleAction = uiSession.actionManager.createAction({
             actionType: ActionTypes.NoArgsAction,
             onExecute: () => {
                 uiSession.toolRail.setSelectedOptionId(tool.id, true);
             },
         });
+
+        // Add the extension to the tool rail and give it an icon
+        const tool = uiSession.toolRail.addTool(
+            {
+                displayStringId: 'sample.portalgenerator.title',
+                displayAltText: 'Portal Generator (CTRL + SHIFT + P)',
+                icon: 'pack://textures/portal-generator.png',
+                tooltipStringId: 'sample.portalgenerator.tooltip',
+                tooltipAltText: 'Creates portals',
+            },
+            toolToggleAction
+        );
+
+        // Register a global shortcut (CTRL + SHIFT + P) to select the tool
         uiSession.inputManager.registerKeyBinding(
             EditorInputContext.GlobalToolMode,
             toolToggleAction,
@@ -524,8 +529,7 @@ class EndPortal implements IPortalGenerator {
         } else if (this._dataSource.filledEyeCount !== 0) {
             const possibleEyeLocs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
             for (let i = 0; i < this._dataSource.filledEyeCount; ++i) {
-                const rand = getRandomInt(possibleEyeLocs.length);
-
+                const rand = Math.floor(Math.random() * possibleEyeLocs.length);
                 eyesToUse[possibleEyeLocs[rand]] = true;
                 possibleEyeLocs.splice(rand, 1);
             }
@@ -566,10 +570,10 @@ class EndPortal implements IPortalGenerator {
                 if (block) {
                     block.setType(blockType);
                     if (blockType === MinecraftBlockTypes.EndPortalFrame) {
-                        const perms = block.permutation.clone();
-                        perms.withState('direction', rot);
-                        perms.withState('end_portal_eye_bit', eyesToUse[i]);
-                        block.setPermutation(perms);
+                        const perm = block.permutation
+                            .withState('direction', rot)
+                            .withState('end_portal_eye_bit', eyesToUse[i]);
+                        block.setPermutation(perm);
                         i += 1;
                     }
                 } else {
