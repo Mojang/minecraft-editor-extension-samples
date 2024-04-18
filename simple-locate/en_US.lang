@@ -1,0 +1,19 @@
+## Comments can be added anywhere on a valid line by starting with '##'
+##
+## Note, trailing spaces will NOT be trimmed. If you want room between the end of the string and the start of a
+## comment on the same line, use TABs.
+sample.simplelocate.tool.title=Locate
+sample.simplelocate.tool.locatetype.title=Locate Type
+sample.simplelocate.tool.locatetype.biome.title=Locate Biome
+sample.simplelocate.tool.locatetype.biome=Biome
+sample.simplelocate.tool.locatetype.structure.title=Locate Structure
+sample.simplelocate.tool.locatetype.structure=Structure
+sample.simplelocate.tool.biome.title=Biome
+sample.simplelocate.tool.biome.find=Find Biome
+sample.simplelocate.tool.structure.title=Structure
+sample.simplelocate.tool.structure.message=Structure searching is not currently supported
+sample.simplelocate.tool.results.title=Results
+sample.simplelocate.tool.results.foundat.title=Found at
+sample.simplelocate.tool.results.foundat=Found at
+sample.simplelocate.tool.results.notfound.title=No Results
+sample.simplelocate.tool.results.notfound=No Results Found

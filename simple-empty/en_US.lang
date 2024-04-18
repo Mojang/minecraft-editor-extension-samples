@@ -1,0 +1,23 @@
+## Comments can be added anywhere on a valid line by starting with '##'
+##
+## Note, trailing spaces will NOT be trimmed. If you want room between the end of the string and the start of a
+## comment on the same line, use TABs.
+sample.simpleempty.tool.title=Simple Empty Tool
+sample.simpleempty.tool.tooltip=A simple empty tool that does nothing really except demonstrate setting up a tool
+sample.simpleempty.tool.pane.title=Parent Pane
+sample.simpleempty.tool.pane.top.text=The main window pane (at the top) - should appear before any child panes
+sample.simpleempty.tool.pane.bottom.text=The main window pane (at the bottom) - should appear after all child panes
+sample.simpleempty.tool.pane.subpane1.title=Sub-Pane(1)
+sample.simpleempty.tool.subpane1.text=A child pane of primary sub pane (a sub-sub-pane, if you will).  This should appear before any sub panes because its in the beginFinalize function
+sample.simpleempty.tool.pane.subpane2.title=Sub-Pane(2)
+sample.simpleempty.tool.subpane2.text=A child pane of primary sub pane (a sub-sub-pane, if you will)
+sample.simpleempty.tool.comboitem.visible=Sub Pane Visibility
+sample.simpleempty.tool.comboitem1=Sub-Pane(1)
+sample.simpleempty.tool.comboitem2=Sub-Pane(2)
+sample.simpleempty.tool.comboitem3=Both Panes
+sample.simpleempty.tool.comboitem4=No Panes
+sample.simpleempty.tool.pane.subpane1.title=Sub-Pane(1)
+sample.simpleempty.tool.subpane1.subpane1.title=Sub-Sub-Pane(1-1)
+sample.simpleempty.tool.subpane1.subpane1.text=The first child pane of sub pane (1)
+sample.simpleempty.tool.subpane1.subpane2.title=Sub-Sub-Pane(1-2)
+sample.simpleempty.tool.subpane1.subpane2.text=A second child pane of sub pane (1)

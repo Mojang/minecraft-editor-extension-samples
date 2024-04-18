@@ -1,0 +1,1 @@
+Adds an extension which demonstrates the use of sub-panes to group together UI controls, and uses the visibility of those sub-panes to create different views of data.  The extension also demonstrates the use of the mutually exclusive visibility properties of sub-panes, and some use of the Biome API.<br> **Author**: Dave & Mitch
