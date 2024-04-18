@@ -1,0 +1,1 @@
+Adds a brush shape 'Star' to the new brush shape manager.<br> **Author**: Gordon
