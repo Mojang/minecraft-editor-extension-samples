@@ -388,7 +388,15 @@ function addFarmGeneratorSettingsPane(uiSession: IPlayerUISession, tool: IModalT
  * Create a new tool rail item for farm generator
  */
 function addFarmGeneratorTool(uiSession: IPlayerUISession) {
-    // Create action
+    const tool = uiSession.toolRail.addTool({
+        displayStringId: 'sample.farmgenerator.tool.title',
+        displayAltText: 'Farm Generator (CTRL + SHIFT + F)',
+        icon: 'pack://textures/farm-generator.png',
+        tooltipStringId: 'sample.farmgenerator.tool.tooltip',
+        tooltipAltText: 'Quickly create a custom farm',
+    });
+
+    // Register a global shortcut (CTRL + SHIFT + P) to select the tool
     const toolToggleAction = uiSession.actionManager.createAction({
         actionType: ActionTypes.NoArgsAction,
         onExecute: () => {
@@ -396,18 +404,6 @@ function addFarmGeneratorTool(uiSession: IPlayerUISession) {
         },
     });
 
-    const tool = uiSession.toolRail.addTool(
-        {
-            displayStringId: 'sample.farmgenerator.tool.title',
-            displayAltText: 'Farm Generator (CTRL + SHIFT + F)',
-            icon: 'pack://textures/farm-generator.png',
-            tooltipStringId: 'sample.farmgenerator.tool.tooltip',
-            tooltipAltText: 'Quickly create a custom farm',
-        },
-        toolToggleAction
-    );
-
-    // Register a global shortcut (CTRL + SHIFT + P) to select the tool
     uiSession.inputManager.registerKeyBinding(
         EditorInputContext.GlobalToolMode,
         toolToggleAction,

@@ -2,9 +2,9 @@
 ##
 ## Note, trailing spaces will NOT be trimmed. If you want room between the end of the string and the start of a
 ## comment on the same line, use TABs.
-sample.treegenerator.tool.title=Tree Generator
+sample.treegenerator.tool.title=Tree Generator (CTRL + SHIFT + T)
 sample.treegenerator.tool.tooltip=Single Click to place whole trees
 sample.treegenerator.pane.title=Tree Generator
 sample.treegenerator.pane.type=Tree Type
 sample.treegenerator.pane.height=Tree Height
-sample.treegenerator.pane.variance=Tree Height Random Variance
+sample.treegenerator.pane.variance=Tree Height Random Variance

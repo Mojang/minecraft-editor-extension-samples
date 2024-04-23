@@ -1,6 +1,5 @@
 // Copyright (c) Mojang AB.  All rights reserved.
 
-import { Vector3Utils } from '@minecraft/math';
 import {
     ActionTypes,
     CursorControlMode,
@@ -11,6 +10,7 @@ import {
     registerEditorExtension,
 } from '@minecraft/server-editor';
 import { EasingType, TicksPerSecond, Vector3, system } from '@minecraft/server';
+import { Vector3Utils } from '@minecraft/math';
 
 interface GrappleStorage {
     latestRunId?: number;

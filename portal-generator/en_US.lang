@@ -2,7 +2,7 @@
 ##
 ## Note, trailing spaces will NOT be trimmed. If you want room between the end of the string and the start of a
 ## comment on the same line, use TABs.
-sample.portalgenerator.title=Portal Generator
+sample.portalgenerator.title=Portal Generator (CTRL + SHIFT + P)
 sample.portalgenerator.tooltip=Create Portals with a single click
 sample.portalgenerator.pane.title=Portal Generator
 sample.portalgenerator.pane.replacefloor=Replace Floor
