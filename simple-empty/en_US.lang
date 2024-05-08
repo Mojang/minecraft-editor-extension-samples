@@ -16,7 +16,6 @@ sample.simpleempty.tool.comboitem1=Sub-Pane(1)
 sample.simpleempty.tool.comboitem2=Sub-Pane(2)
 sample.simpleempty.tool.comboitem3=Both Panes
 sample.simpleempty.tool.comboitem4=No Panes
-sample.simpleempty.tool.pane.subpane1.title=Sub-Pane(1)
 sample.simpleempty.tool.subpane1.subpane1.title=Sub-Sub-Pane(1-1)
 sample.simpleempty.tool.subpane1.subpane1.text=The first child pane of sub pane (1)
 sample.simpleempty.tool.subpane1.subpane2.title=Sub-Sub-Pane(1-2)
