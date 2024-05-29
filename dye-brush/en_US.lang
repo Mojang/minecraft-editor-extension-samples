@@ -3,5 +3,5 @@
 ## Note, trailing spaces will NOT be trimmed. If you want room between the end of the string and the start of a
 ## comment on the same line, use TABs.
 sample.dyebrush.tool.title=Dye Brush
-sample.dyebrush.tool.tooltip=Change the color of entity color components (this only works when actors are un-paused)
+sample.dyebrush.tool.tooltip=Change the color of entity color components. The updated color is applied when entity simulation resumes.
 sample.dyebrush.pane.colordropdown.title=Color
