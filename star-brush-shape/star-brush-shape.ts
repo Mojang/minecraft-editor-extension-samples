@@ -100,23 +100,27 @@ export function registerStarBrushExtension() {
                             if (arg !== undefined && typeof arg === 'number') {
                                 settings.radius = arg;
                             }
+                            return false;
                         },
-                        {
-                            min: MIN_RADIUS,
-                            max: MAX_RADIUS,
+                        MIN_RADIUS,
+                        MAX_RADIUS
+                    ),
+                    new SettingsUIElement('includeVertical', settings.includeVertical, arg => {
+                        if (arg !== undefined && typeof arg === 'boolean') {
+                            settings.includeVertical = arg;
+                            return true;
                         }
-                    ),
+                        return false;
+                    }),
                     new SettingsUIElement(
-                        'includeVertical',
-                        settings.includeVertical,
-                        arg => {
-                            if (arg !== undefined && typeof arg === 'boolean') {
-                                settings.includeVertical = arg;
-                            }
+                        'Vector3',
+                        { x: 1, y: 2, z: 3 },
+                        _value => {
+                            return false;
                         },
-                        { refreshOnChange: true }
+                        undefined,
+                        undefined
                     ),
-                    new SettingsUIElement('Vector3', { x: 1, y: 2, z: 3 }, _value => {}),
                 ];
             };
 
