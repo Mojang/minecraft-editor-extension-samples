@@ -3,6 +3,7 @@
 import {
     ActionTypes,
     bindDataSource,
+    ColorPickerVariant,
     CursorTargetMode,
     IDropdownItem,
     IModalTool,
@@ -190,6 +191,7 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
     });
 
     pane.addColorPicker(props, 'color', {
+        variant: ColorPickerVariant.Expanded,
         onChange: (_obj, _property, _oldValue, newValue: object) => {
             const color = newValue as unknown as RGBA;
             props.entityBrush = findClosestColor(color, colorPalette);

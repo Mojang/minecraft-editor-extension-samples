@@ -17,3 +17,4 @@ sample.simplelocate.tool.results.foundat.title=Found at
 sample.simplelocate.tool.results.foundat=Found at
 sample.simplelocate.tool.results.notfound.title=No Results
 sample.simplelocate.tool.results.notfound=No Results Found
+sample.simplelocate.tool.keyBinding.toggleTool=Toggle Locate Biome Tool
