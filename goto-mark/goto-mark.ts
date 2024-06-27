@@ -154,7 +154,7 @@ function buildParentPane(uiSession: IPlayerUISession<ExtensionStorage>, storage:
         const previousLocation = vector3Truncate(storage.previousLocation);
 
         // Player hasn't moved - don't refresh
-        if (vector3Equals(currentLocation, previousLocation)) {
+        if (vector3Equals(currentLocation, previousLocation) || !parentPane.visible) {
             return;
         }
 

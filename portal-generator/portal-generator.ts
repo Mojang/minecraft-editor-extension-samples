@@ -112,8 +112,11 @@ class PortalGenerator implements IDisposable {
         uiSession.inputManager.registerKeyBinding(
             EditorInputContext.GlobalToolMode,
             toolToggleAction,
-            KeyboardKey.KEY_P,
-            InputModifier.Control | InputModifier.Shift
+            { key: KeyboardKey.KEY_P, modifier: InputModifier.Control | InputModifier.Shift },
+            {
+                uniqueId: 'editorSamples:portalGenerator:toggleTool',
+                label: 'sample.portalgenerator.keyBinding.toggleTool',
+            }
         );
 
         // Create an action that will be executed on left mouse click

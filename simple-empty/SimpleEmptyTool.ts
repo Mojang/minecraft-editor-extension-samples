@@ -275,8 +275,10 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
             propertyPaneOptions: paneOptions,
 
             activationKeyBinding: {
-                button: KeyboardKey.KEY_B,
-                buttonModifier: InputModifier.Shift | InputModifier.Control,
+                binding: {
+                    key: KeyboardKey.KEY_B,
+                    modifier: InputModifier.Shift | InputModifier.Control,
+                },
             },
         };
 

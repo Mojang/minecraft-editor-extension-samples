@@ -227,8 +227,14 @@ export class SimpleLocate extends SimpleToolWrapper {
         const toolOptions: ISimpleToolOptions = {
             name: 'Simple Locate Biome',
             activationKeyBinding: {
-                button: KeyboardKey.KEY_L,
-                buttonModifier: InputModifier.Control | InputModifier.Shift,
+                binding: {
+                    key: KeyboardKey.KEY_L,
+                    modifier: InputModifier.Control | InputModifier.Shift,
+                },
+                info: {
+                    uniqueId: 'editorSample:locateBiomeToolKeyBinding:toggleTool',
+                    label: 'sample.simplelocate.tool.keyBinding.toggleTool',
+                },
             },
 
             propertyPaneOptions: {

@@ -273,7 +273,15 @@ function addFarmGeneratorSettingsPane(uiSession: IPlayerUISession, tool: IModalT
     });
 
     // Register actions as input bindings to tool context
-    tool.registerKeyBinding(executeKeyAction, KeyboardKey.KEY_P, InputModifier.Control);
+    tool.registerKeyBinding(
+        executeKeyAction,
+        { key: KeyboardKey.KEY_P, modifier: InputModifier.Control },
+        {
+            uniqueId: 'editorSamples:farmGenerator:place',
+            label: 'sample.farmgenerator.keyBinding.place',
+        }
+    );
+
     tool.registerMouseButtonBinding(executeMouseAction);
     windowPane.addNumber(settings, 'farmLength', {
         titleStringId: 'sample.farmgenerator.pane.length',
@@ -403,6 +411,8 @@ function addFarmGeneratorTool(uiSession: IPlayerUISession) {
             icon: 'pack://textures/farm-generator.png',
             tooltipStringId: 'sample.farmgenerator.tool.tooltip',
             tooltipAltText: 'Quickly create a custom farm',
+            inputContextId: 'editorSamples:farmGenerator',
+            inputContextLabel: 'sample.farmgenerator.tool.title',
         },
         toolToggleAction
     );
@@ -411,8 +421,11 @@ function addFarmGeneratorTool(uiSession: IPlayerUISession) {
     uiSession.inputManager.registerKeyBinding(
         EditorInputContext.GlobalToolMode,
         toolToggleAction,
-        KeyboardKey.KEY_F,
-        InputModifier.Control | InputModifier.Shift
+        { key: KeyboardKey.KEY_F, modifier: InputModifier.Control | InputModifier.Shift },
+        {
+            uniqueId: 'editorSamples:farmGenerator:toggleTool',
+            label: 'sample.farmgenerator.keyBinding.toggleTool',
+        }
     );
 
     return tool;

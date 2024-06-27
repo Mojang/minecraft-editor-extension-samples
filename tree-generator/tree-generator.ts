@@ -370,7 +370,11 @@ function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
     });
 
     // Register the action as a keyboard shortcut
-    tool.registerKeyBinding(executeAction, KeyboardKey.KEY_T, InputModifier.None);
+    tool.registerKeyBinding(
+        executeAction,
+        { key: KeyboardKey.KEY_T },
+        { uniqueId: 'editorSamples:treeGenerator:place', label: 'sample.treegenerator.keyBinding.place' }
+    );
     tool.bindPropertyPane(pane);
 
     pane.hide();
@@ -411,6 +415,8 @@ function addTool(uiSession: IPlayerUISession) {
             icon: 'pack://textures/tree-generator.png',
             tooltipStringId: 'sample.treegenerator.tool.tooltip',
             tooltipAltText: 'Click to place trees!',
+            inputContextId: 'editorSamples:treeGenerator',
+            inputContextLabel: 'sample.treegenerator.tool.title',
         },
         toolToggleAction
     );
@@ -419,8 +425,8 @@ function addTool(uiSession: IPlayerUISession) {
     uiSession.inputManager.registerKeyBinding(
         EditorInputContext.GlobalToolMode,
         toolToggleAction,
-        KeyboardKey.KEY_T,
-        InputModifier.Control | InputModifier.Shift
+        { key: KeyboardKey.KEY_T, modifier: InputModifier.Control | InputModifier.Shift },
+        { uniqueId: 'editorSamples:treeGenerator:toggleTool', label: 'sample.treegenerator.keyBinding.toggleTool' }
     );
 
     return tool;
