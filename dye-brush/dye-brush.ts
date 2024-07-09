@@ -11,6 +11,7 @@ import {
     MouseActionType,
     MouseInputType,
     MouseProps,
+    Ray,
     registerEditorExtension,
     Selection,
 } from '@minecraft/server-editor';
@@ -25,11 +26,9 @@ import {
     EntityColorComponent,
     Player,
     Vector3,
-    RGB,
 } from '@minecraft/server';
 import { Vector3Utils, VECTOR3_UP } from '@minecraft/math';
 
-// Color identifiers expected by EntityColorComponent
 enum BrushColor {
     White = 0,
     Orange = 1,
@@ -91,43 +90,25 @@ export function getRotationCorrectedDirectionVector(rotationY: number, realDirec
     return directionLookup[relativeDirection];
 }
 
-// Calculate nearest entity color to an RGBA color
-function findClosestColor(targetColor: RGBA, colorPalette: Map<BrushColor, RGB>): BrushColor {
-    let minDistance = Number.MAX_VALUE;
-    let closestColor: BrushColor = BrushColor.White;
+//#endregion
 
-    colorPalette.forEach((paletteColor, color) => {
-        const distance = Math.sqrt(
-            Math.pow(targetColor.red - paletteColor.red, 2) +
-                Math.pow(targetColor.green - paletteColor.green, 2) +
-                Math.pow(targetColor.blue - paletteColor.blue, 2)
-        );
-        if (distance < minDistance) {
-            minDistance = distance;
-            closestColor = color;
-        }
-    });
-
-    return closestColor;
-}
-
-const colorPalette = new Map<BrushColor, RGB>([
-    [BrushColor.White, { red: 1, green: 1, blue: 1 }],
-    [BrushColor.Orange, { red: 0.95, green: 0.459, blue: 0 }],
-    [BrushColor.Magenta, { red: 0.94, green: 0, blue: 0.9 }],
-    [BrushColor.LightBlue, { red: 0, green: 0.85, blue: 0.95 }],
-    [BrushColor.Yellow, { red: 0.85, green: 0.95, blue: 0 }],
-    [BrushColor.LightGreen, { red: 0, green: 0.95, blue: 0.6 }],
-    [BrushColor.Pink, { red: 0.9, green: 0.65, blue: 0.85 }],
-    [BrushColor.Gray, { red: 0.6, green: 0.6, blue: 0.6 }],
-    [BrushColor.Silver, { red: 0.75, green: 0.75, blue: 0.75 }],
-    [BrushColor.Cyan, { red: 0, green: 0.9, blue: 0.9 }],
-    [BrushColor.Purple, { red: 0.45, green: 0, blue: 0.9 }],
-    [BrushColor.Blue, { red: 0, green: 0, blue: 1 }],
-    [BrushColor.Brown, { red: 0.8, green: 0.5, blue: 0.1 }],
-    [BrushColor.Green, { red: 0, green: 1, blue: 0 }],
-    [BrushColor.Red, { red: 1, green: 0, blue: 0 }],
-    [BrushColor.Black, { red: 0, green: 0, blue: 0 }],
+const colorPalette = new Map<BrushColor, RGBA>([
+    [BrushColor.White, { red: 1, green: 1, blue: 1, alpha: 1 }],
+    [BrushColor.Orange, { red: 0.95, green: 0.459, blue: 0, alpha: 1 }],
+    [BrushColor.Magenta, { red: 0.94, green: 0, blue: 0.9, alpha: 1 }],
+    [BrushColor.LightBlue, { red: 0, green: 0.85, blue: 0.95, alpha: 1 }],
+    [BrushColor.Yellow, { red: 0.85, green: 0.95, blue: 0, alpha: 1 }],
+    [BrushColor.LightGreen, { red: 0, green: 0.95, blue: 0.6, alpha: 1 }],
+    [BrushColor.Pink, { red: 0.9, green: 0.65, blue: 0.85, alpha: 1 }],
+    [BrushColor.Gray, { red: 0.6, green: 0.6, blue: 0.6, alpha: 1 }],
+    [BrushColor.Silver, { red: 0.75, green: 0.75, blue: 0.75, alpha: 1 }],
+    [BrushColor.Cyan, { red: 0, green: 0.9, blue: 0.9, alpha: 1 }],
+    [BrushColor.Purple, { red: 0.45, green: 0, blue: 0.9, alpha: 1 }],
+    [BrushColor.Blue, { red: 0, green: 0, blue: 1, alpha: 1 }],
+    [BrushColor.Brown, { red: 0.8, green: 0.5, blue: 0.1, alpha: 1 }],
+    [BrushColor.Green, { red: 0, green: 1, blue: 0, alpha: 1 }],
+    [BrushColor.Red, { red: 1, green: 0, blue: 0, alpha: 1 }],
+    [BrushColor.Black, { red: 0, green: 0, blue: 0, alpha: 1 }],
 ]);
 
 interface DyeBrushStorage {
@@ -138,12 +119,24 @@ interface DyeBrushStorage {
 
 type DyeBrushSession = IPlayerUISession<DyeBrushStorage>;
 
-function onColorUpdated(newColor: RGBA, uiSession: DyeBrushSession) {
-    if (uiSession.scratchStorage) {
-        uiSession.scratchStorage.previewSelection.setFillColor(newColor);
-        uiSession.scratchStorage.previewSelection.setOutlineColor({ ...newColor, alpha: 1 });
+function onColorUpdated(newColor: BrushColor, uiSession: DyeBrushSession) {
+    const color = colorPalette.get(newColor);
+    if (color && uiSession.scratchStorage) {
+        uiSession.scratchStorage.currentColor = newColor;
+        uiSession.scratchStorage.previewSelection.setFillColor({
+            red: color.red,
+            green: color.green,
+            blue: color.blue,
+            alpha: 0.01,
+        });
+        uiSession.scratchStorage.previewSelection.setOutlineColor({
+            red: color.red,
+            green: color.green,
+            blue: color.blue,
+            alpha: 1,
+        });
         const cursorProps = uiSession.extensionContext.cursor.getProperties();
-        cursorProps.outlineColor = { ...newColor, alpha: 1 };
+        cursorProps.outlineColor = color;
         cursorProps.targetMode = CursorTargetMode.Face;
         uiSession.extensionContext.cursor.setProperties(cursorProps);
     }
@@ -157,16 +150,15 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
 
     // Here is the binding created.
     const props = bindDataSource(pane, {
-        entityBrush: BrushColor.White,
-        color: { red: 1, green: 1, blue: 1, alpha: 0.5 },
+        color: BrushColor.White,
         size: 4,
     });
 
     onColorUpdated(props.color, uiSession);
 
-    pane.addDropdown(props, 'entityBrush', {
-        titleStringId: '',
-        titleAltText: 'Brush',
+    pane.addDropdown(props, 'color', {
+        titleStringId: 'sample.dyebrush.pane.colordropdown.title',
+        titleAltText: 'Color',
         dropdownItems: Object.values(BrushColor).reduce<IDropdownItem[]>((list, dye, index) => {
             if (typeof dye === 'string') {
                 list.push({
@@ -177,23 +169,12 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
             }
             return list;
         }, []),
-        onChange: (_obj, _property, _oldValue, newValue: object) => {
-            const newVal = newValue as unknown as BrushColor;
-            if (newVal in BrushColor) {
-                const foundColor = colorPalette.get(newVal);
-                if (foundColor) {
-                    props.color = { ...foundColor, alpha: props.color.alpha };
-                }
+        onChange: (_obj: object, _property: string, _oldValue: object, _newValue: object) => {
+            const newVal = _newValue as unknown as BrushColor;
+            if (newVal) {
+                props.color = newVal;
                 onColorUpdated(props.color, uiSession);
             }
-        },
-    });
-
-    pane.addColorPicker(props, 'color', {
-        onChange: (_obj, _property, _oldValue, newValue: object) => {
-            const color = newValue as unknown as RGBA;
-            props.entityBrush = findClosestColor(color, colorPalette);
-            onColorUpdated(props.color, uiSession);
         },
     });
 
@@ -249,7 +230,7 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
 
     const mouseButtonAction = uiSession.actionManager.createAction({
         actionType: ActionTypes.MouseRayCastAction,
-        onExecute: (_, mouseProps: MouseProps) => {
+        onExecute: (mouseRay: Ray, mouseProps: MouseProps) => {
             if (uiSession.scratchStorage === undefined) {
                 uiSession.log.error('Storage was not initialized.');
                 return;
@@ -268,7 +249,7 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
                         for (const entity of entities) {
                             const colorComp = entity.getComponent('minecraft:color') as EntityColorComponent;
                             if (colorComp) {
-                                colorComp.value = props.entityBrush;
+                                colorComp.value = props.color;
                             }
                         }
                     }
@@ -281,7 +262,7 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
 
     const executeBrushRayAction = uiSession.actionManager.createAction({
         actionType: ActionTypes.MouseRayCastAction,
-        onExecute: (_, mouseProps: MouseProps) => {
+        onExecute: (mouseRay: Ray, mouseProps: MouseProps) => {
             if (mouseProps.inputType === MouseInputType.Drag) {
                 onExecuteBrush();
             }
@@ -292,15 +273,15 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
     // Example for adding mouse wheel
     const executeBrushSizeAction = uiSession.actionManager.createAction({
         actionType: ActionTypes.MouseRayCastAction,
-        onExecute: (_, mouseProps: MouseProps) => {
+        onExecute: (mouseRay: Ray, mouseProps: MouseProps) => {
             if (mouseProps.mouseAction === MouseActionType.Wheel) {
                 if (mouseProps.inputType === MouseInputType.WheelOut) {
-                    if (props.entityBrush > 0) {
-                        props.entityBrush--;
+                    if (props.color > 0) {
+                        props.color--;
                     }
                 } else if (mouseProps.inputType === MouseInputType.WheelIn) {
-                    if (props.entityBrush < 15) {
-                        props.entityBrush++;
+                    if (props.color < 15) {
+                        props.color++;
                     }
                 }
                 onColorUpdated(props.color, uiSession);
@@ -309,10 +290,14 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
     });
     tool.registerMouseWheelBinding(executeBrushSizeAction);
 
-    tool.onModalToolActivation.subscribe((evt: ModalToolLifecycleEventPayload) => {
-        if (evt.isActiveTool) {
+    tool.onModalToolActivation.subscribe((eventData: ModalToolLifecycleEventPayload) => {
+        if (eventData.isActiveTool) {
+            pane.show();
             onColorUpdated(props.color, uiSession);
+        } else {
+            pane.hide();
         }
+
         uiSession.scratchStorage?.previewSelection?.clear();
     });
 
