@@ -3,6 +3,7 @@
 import {
     ActionTypes,
     bindDataSource,
+    ColorPickerVariant,
     CursorTargetMode,
     IDropdownItem,
     IModalTool,
@@ -151,8 +152,7 @@ function onColorUpdated(newColor: RGBA, uiSession: DyeBrushSession) {
 
 function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
     const pane = uiSession.createPropertyPane({
-        titleStringId: 'sample.dyeBrush.pane.title',
-        titleAltText: 'Dye Brush',
+        title: 'sample.dyeBrush.pane.title',
     });
 
     // Here is the binding created.
@@ -165,13 +165,11 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
     onColorUpdated(props.color, uiSession);
 
     pane.addDropdown(props, 'entityBrush', {
-        titleStringId: '',
-        titleAltText: 'Brush',
+        title: 'Brush',
         dropdownItems: Object.values(BrushColor).reduce<IDropdownItem[]>((list, dye, index) => {
             if (typeof dye === 'string') {
                 list.push({
-                    displayStringId: dye,
-                    displayAltText: dye,
+                    label: dye,
                     value: index,
                 });
             }
@@ -190,6 +188,7 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
     });
 
     pane.addColorPicker(props, 'color', {
+        variant: ColorPickerVariant.Expanded,
         onChange: (_obj, _property, _oldValue, newValue: object) => {
             const color = newValue as unknown as RGBA;
             props.entityBrush = findClosestColor(color, colorPalette);
@@ -323,11 +322,9 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
 
 export function addDyeBrushTool(uiSession: DyeBrushSession) {
     const tool = uiSession.toolRail.addTool({
-        displayAltText: 'Dye Brush',
-        displayStringId: 'sample.dyebrush.tool.title',
+        title: 'sample.dyebrush.tool.title',
+        tooltip: 'sample.dyebrush.tool.tooltip',
         icon: 'pack://textures/dye-brush.png',
-        tooltipAltText: 'Change the color of entity color components (this only works when actors are un-paused)',
-        tooltipStringId: 'sample.dyebrush.tool.tooltip',
     });
 
     return tool;

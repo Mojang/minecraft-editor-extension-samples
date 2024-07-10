@@ -40,11 +40,9 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
         // you (the developer) to insert your own code into the various stages of the tool's lifecycle (for this
         // particular component of the tool)
         const toolRailOptions: ISimpleToolRailOptions = {
-            displayStringId: 'sample.simpleempty.tool.title',
-            displayAltText: 'Simple Empty Tool',
+            title: 'sample.simpleempty.tool.title',
             icon: 'pack://textures/simple-empty.png',
-            tooltipAltText: 'A simple empty tool that does nothing really except demonstrate setting up a tool',
-            tooltipStringId: 'sample.simpleempty.tool.tooltip',
+            tooltip: 'sample.simpleempty.tool.tooltip',
             onFinalize: component => {
                 component.simpleTool.logDebug('onFinalize(ISimpleToolRailComponent)');
             },
@@ -73,8 +71,7 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
         //
         const paneOptions: ISimpleToolPaneOptions = {
             id: 'main', // a unique canonical name for the pane
-            titleAltText: 'Parent Pane',
-            titleStringId: 'sample.simpleempty.tool.pane.title',
+            title: 'sample.simpleempty.tool.pane.title',
 
             onBeginFinalize: component => {
                 component.simpleTool.logDebug('onBeginFinalize(Pane main)');
@@ -91,8 +88,7 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
             childPanes: [
                 {
                     id: '1',
-                    titleAltText: 'Sub-Pane(1)',
-                    titleStringId: 'sample.simpleempty.tool.pane.subpane1.title',
+                    title: 'sample.simpleempty.tool.pane.subpane1.title',
 
                     onBeginFinalize: component => {
                         component.simpleTool.logDebug('onBeginFinalize(Sub-Pane(1))');
@@ -112,27 +108,22 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
 
                         // Add a dropdown to control the visibility of the child panes
                         component.pane.addDropdown(this._settings, 'selected', {
-                            titleStringId: 'sample.simpleempty.tool.comboitem.visible',
-                            titleAltText: 'Sub Pane Visibility',
+                            title: 'sample.simpleempty.tool.comboitem.visible',
                             dropdownItems: [
                                 {
-                                    displayStringId: 'sample.simpleempty.tool.pane.comboitem1',
-                                    displayAltText: 'Sub-Pane(1)',
+                                    label: 'sample.simpleempty.tool.comboitem1',
                                     value: 0,
                                 },
                                 {
-                                    displayStringId: 'sample.simpleempty.tool.pane.pane.comboitem2',
-                                    displayAltText: 'Sub-Pane(2)',
+                                    label: 'sample.simpleempty.tool.comboitem2',
                                     value: 1,
                                 },
                                 {
-                                    displayStringId: 'sample.simpleempty.tool.pane.pane.comboitem3',
-                                    displayAltText: 'Both Panes',
+                                    label: 'sample.simpleempty.tool.comboitem3',
                                     value: 2,
                                 },
                                 {
-                                    displayStringId: 'sample.simpleempty.tool.pane.pane.comboitem4',
-                                    displayAltText: 'No Panes',
+                                    label: 'sample.simpleempty.tool.comboitem4',
                                     value: 3,
                                 },
                             ],
@@ -172,8 +163,7 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
                     childPanes: [
                         {
                             id: '1-1',
-                            titleStringId: 'sample.simpleempty.tool.subpane1.subpane1.title',
-                            titleAltText: 'Sub Sub Pane(1-1)',
+                            title: 'sample.simpleempty.tool.subpane1.subpane1.title',
                             onBeginFinalize: component => {
                                 component.simpleTool.logDebug('onBeginFinalize(Sub Sub Pane(1-1))');
                                 component.pane.addText({ t: 'The first child pane of sub pane (1)' }, 't', {
@@ -184,8 +174,7 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
                         },
                         {
                             id: '1-2',
-                            titleStringId: 'sample.simpleempty.tool.subpane1.subpane2.title',
-                            titleAltText: 'Sub Sub Pane(1-2)',
+                            title: 'sample.simpleempty.tool.subpane1.subpane2.title',
                             onBeginFinalize: component => {
                                 component.simpleTool.logDebug('onBeginFinalize(Sub Sub Pane(1-2))');
                                 component.pane.addText({ t: 'A second child pane of sub pane (1)' }, 't', {
@@ -206,7 +195,7 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
                 },
                 {
                     id: '2',
-                    titleAltText: 'Sub Pane(2)',
+                    title: 'Sub Pane(2)',
                     onEndFinalize: component => {
                         component.simpleTool.logDebug('onEndFinalize(Sub Pane(2))');
                         component.pane.addText({ t: 'A sub pane' }, 't');
@@ -275,8 +264,10 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
             propertyPaneOptions: paneOptions,
 
             activationKeyBinding: {
-                button: KeyboardKey.KEY_B,
-                buttonModifier: InputModifier.Shift | InputModifier.Control,
+                binding: {
+                    key: KeyboardKey.KEY_B,
+                    modifier: InputModifier.Shift | InputModifier.Control,
+                },
             },
         };
 

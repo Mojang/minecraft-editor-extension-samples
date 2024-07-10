@@ -131,16 +131,13 @@ const buildFarm = (
 
 function addFarmGeneratorSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
     const windowPane = uiSession.createPropertyPane({
-        titleStringId: 'sample.farmgenerator.pane.title',
-        titleAltText: 'Farm Generator',
+        title: 'sample.farmgenerator.pane.title',
     });
     const cropPane = windowPane.createPropertyPane({
-        titleStringId: 'sample.farmgenerator.pane.crops.title',
-        titleAltText: 'Crops',
+        title: 'sample.farmgenerator.pane.crops.title',
     });
     const animalPane = windowPane.createPropertyPane({
-        titleStringId: 'sample.farmgenerator.pane.animals.title',
-        titleAltText: 'Animals',
+        title: 'sample.farmgenerator.pane.animals.title',
     });
 
     const settings: SettingsType = bindDataSource(windowPane, {
@@ -273,110 +270,97 @@ function addFarmGeneratorSettingsPane(uiSession: IPlayerUISession, tool: IModalT
     });
 
     // Register actions as input bindings to tool context
-    tool.registerKeyBinding(executeKeyAction, KeyboardKey.KEY_P, InputModifier.Control);
+    tool.registerKeyBinding(
+        executeKeyAction,
+        { key: KeyboardKey.KEY_P, modifier: InputModifier.Control },
+        {
+            uniqueId: 'editorSamples:farmGenerator:place',
+            label: 'sample.farmgenerator.keyBinding.place',
+        }
+    );
+
     tool.registerMouseButtonBinding(executeMouseAction);
     windowPane.addNumber(settings, 'farmLength', {
-        titleStringId: 'sample.farmgenerator.pane.length',
-        titleAltText: 'Length',
+        title: 'sample.farmgenerator.pane.length',
         min: 2,
         max: 20,
         showSlider: false,
     });
     windowPane.addNumber(settings, 'farmWidth', {
-        titleStringId: 'sample.farmgenerator.pane.width',
-        titleAltText: 'Width',
+        title: 'sample.farmgenerator.pane.width',
         min: 2,
         max: 20,
         showSlider: false,
     });
     windowPane.addDropdown(settings, 'fenceType', {
-        titleStringId: 'sample.farmgenerator.pane.fence',
-        titleAltText: 'Fence',
+        title: 'sample.farmgenerator.pane.fence',
         enable: true,
         dropdownItems: [
             {
-                displayAltText: 'Oak',
-                displayStringId: 'Oak',
+                label: 'Oak',
                 value: 0,
             },
             {
-                displayAltText: 'Birch',
-                displayStringId: 'Birch',
+                label: 'Birch',
                 value: 1,
             },
             {
-                displayAltText: 'Acacia',
-                displayStringId: 'Acacia',
+                label: 'Acacia',
                 value: 2,
             },
             {
-                displayAltText: 'Bamboo',
-                displayStringId: 'Bamboo',
+                label: 'Bamboo',
                 value: 3,
             },
             {
-                displayAltText: 'Cherry',
-                displayStringId: 'Cherry',
+                label: 'Cherry',
                 value: 4,
             },
             {
-                displayAltText: 'Jungle',
-                displayStringId: 'Jungle',
+                label: 'Jungle',
                 value: 5,
             },
             {
-                displayAltText: 'Spruce',
-                displayStringId: 'Spruce',
+                label: 'Spruce',
                 value: 6,
             },
             {
-                displayAltText: 'Warped',
-                displayStringId: 'Warped',
+                label: 'Warped',
                 value: 7,
             },
             {
-                displayAltText: 'Crimson',
-                displayStringId: 'Crimson',
+                label: 'Crimson',
                 value: 8,
             },
         ],
     });
 
     windowPane.addBool(settings, 'irrigation', {
-        titleStringId: 'sample.farmgenerator.pane.irrigation',
-        titleAltText: 'Add irrigation',
+        title: 'sample.farmgenerator.pane.irrigation',
     });
     cropPane.addBool(cropSettings, 'wheat', {
-        titleStringId: 'sample.farmgenerator.pane.crops.wheat',
-        titleAltText: 'Wheat',
+        title: 'sample.farmgenerator.pane.crops.wheat',
     });
     cropPane.addBool(cropSettings, 'potato', {
-        titleStringId: 'sample.farmgenerator.pane.crops.potato',
-        titleAltText: 'Potato',
+        title: 'sample.farmgenerator.pane.crops.potato',
     });
     cropPane.addBool(cropSettings, 'beetroot', {
-        titleStringId: 'sample.farmgenerator.pane.crops.beets',
-        titleAltText: 'Beetroot',
+        title: 'sample.farmgenerator.pane.crops.beets',
     });
     cropPane.addBool(cropSettings, 'pumpkin', {
-        titleStringId: 'sample.farmgenerator.pane.crops.pumpkin',
-        titleAltText: 'Pumpkin',
+        title: 'sample.farmgenerator.pane.crops.pumpkin',
     });
     cropPane.addBool(cropSettings, 'carrot', {
-        titleStringId: 'sample.farmgenerator.pane.crops.carrot',
-        titleAltText: 'Carrot',
+        title: 'sample.farmgenerator.pane.crops.carrot',
     });
     animalPane.addBool(animalSettings, 'cow', {
-        titleStringId: 'sample.farmgenerator.pane.animals.cow',
-        titleAltText: 'Cow',
+        title: 'sample.farmgenerator.pane.animals.cow',
     });
     animalPane.addBool(animalSettings, 'sheep', {
-        titleStringId: 'sample.farmgenerator.pane.animals.sheep',
-        titleAltText: 'Sheep',
+        title: 'sample.farmgenerator.pane.animals.sheep',
     });
     animalPane.addBool(animalSettings, 'pig', {
-        titleStringId: 'sample.farmgenerator.pane.animals.pig',
-        titleAltText: 'Pig',
+        title: 'sample.farmgenerator.pane.animals.pig',
     });
 
     tool.bindPropertyPane(windowPane);
@@ -398,11 +382,11 @@ function addFarmGeneratorTool(uiSession: IPlayerUISession) {
 
     const tool = uiSession.toolRail.addTool(
         {
-            displayStringId: 'sample.farmgenerator.tool.title',
-            displayAltText: 'Farm Generator (CTRL + SHIFT + F)',
+            title: 'sample.farmgenerator.tool.title',
             icon: 'pack://textures/farm-generator.png',
-            tooltipStringId: 'sample.farmgenerator.tool.tooltip',
-            tooltipAltText: 'Quickly create a custom farm',
+            tooltip: 'sample.farmgenerator.tool.tooltip',
+            inputContextId: 'editorSamples:farmGenerator',
+            inputContextLabel: 'sample.farmgenerator.tool.title',
         },
         toolToggleAction
     );
@@ -411,8 +395,11 @@ function addFarmGeneratorTool(uiSession: IPlayerUISession) {
     uiSession.inputManager.registerKeyBinding(
         EditorInputContext.GlobalToolMode,
         toolToggleAction,
-        KeyboardKey.KEY_F,
-        InputModifier.Control | InputModifier.Shift
+        { key: KeyboardKey.KEY_F, modifier: InputModifier.Control | InputModifier.Shift },
+        {
+            uniqueId: 'editorSamples:farmGenerator:toggleTool',
+            label: 'sample.farmgenerator.keyBinding.toggleTool',
+        }
     );
 
     return tool;

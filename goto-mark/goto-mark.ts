@@ -79,8 +79,7 @@ function vector3Truncate(vec: Vector3): Vector3 {
 function mapDropdownItems(storage: ExtensionStorage): IDropdownItem[] {
     return storage.storedLocations.map((v, index): IDropdownItem => {
         const item: IDropdownItem = {
-            displayAltText: `${index + 1}: ${v.name} (${vector3ToString(v.location)})`,
-            displayStringId: 'NO_ID',
+            label: `${index + 1}: ${v.name} (${vector3ToString(v.location)})`,
             value: index,
         };
         return item;
@@ -114,20 +113,16 @@ function teleportTo(uiSession: IPlayerUISession<ExtensionStorage>, destination: 
 // Add the extension to the tool rail and give it an icon
 function addExtensionTool(uiSession: IPlayerUISession<ExtensionStorage>): IModalTool {
     const tool = uiSession.toolRail.addTool({
-        displayAltText: 'Goto Mark',
-        displayStringId: 'sample.gotomark.tool.title',
+        title: 'sample.gotomark.tool.title',
         icon: 'pack://textures/goto-mark.png',
-        tooltipAltText: 'Set or Jump to a stored location',
-        tooltipStringId: 'sample.gotomark.tool.tooltip',
+        tooltip: 'Set or Jump to a stored location',
     });
     return tool;
 }
 
 function buildParentPane(uiSession: IPlayerUISession<ExtensionStorage>, storage: ExtensionStorage): IPropertyPane {
     const parentPane = uiSession.createPropertyPane({
-        titleAltText: 'Goto Mark',
-        titleStringId: 'sample.gotomark.pane.title',
-        width: 50,
+        title: 'sample.gotomark.pane.title',
     });
 
     const currentLocation = vector3Truncate(uiSession.extensionContext.player.location);
@@ -138,9 +133,7 @@ function buildParentPane(uiSession: IPlayerUISession<ExtensionStorage>, storage:
     storage.previousLocation = currentLocation;
 
     parentPane.addVector3(storage.parentPaneDataSource, 'playerLocation', {
-        //enable: true,
-        titleAltText: 'Player Location',
-        titleStringId: 'sample.gotomark.pane.location',
+        title: 'sample.gotomark.pane.location',
     });
 
     // Run interval to refresh coordinate population
@@ -154,7 +147,7 @@ function buildParentPane(uiSession: IPlayerUISession<ExtensionStorage>, storage:
         const previousLocation = vector3Truncate(storage.previousLocation);
 
         // Player hasn't moved - don't refresh
-        if (vector3Equals(currentLocation, previousLocation)) {
+        if (vector3Equals(currentLocation, previousLocation) || !parentPane.visible) {
             return;
         }
 
@@ -177,8 +170,7 @@ function buildParentPane(uiSession: IPlayerUISession<ExtensionStorage>, storage:
             },
         }),
         {
-            titleStringId: 'sample.gotomark.pane.button.teleport',
-            titleAltText: 'Teleport to Location',
+            title: 'sample.gotomark.pane.button.teleport',
             visible: true,
         }
     );
@@ -204,8 +196,7 @@ function buildParentPane(uiSession: IPlayerUISession<ExtensionStorage>, storage:
             },
         }),
         {
-            titleStringId: 'sample.gotomark.pane.button.setspawn',
-            titleAltText: 'Set Spawn Point to current',
+            title: 'sample.gotomark.pane.button.setspawn',
             visible: true,
         }
     );
@@ -224,8 +215,7 @@ function buildParentPane(uiSession: IPlayerUISession<ExtensionStorage>, storage:
             },
         }),
         {
-            titleStringId: 'sample.gotomark.pane.button.gotospawn',
-            titleAltText: 'Go to Spawn Point',
+            title: 'sample.gotomark.pane.button.gotospawn',
             visible: true,
         }
     );
@@ -249,8 +239,7 @@ function buildLocationPane(
     }
 
     const locationPane = storage.parentPane.createPropertyPane({
-        titleAltText: 'Stored Locations',
-        titleStringId: 'sample.gotomark.pane.locationpane.title',
+        title: 'sample.gotomark.pane.locationpane.title',
     });
 
     const initialPaneData: LocationPaneDataSourceType = {
@@ -262,8 +251,7 @@ function buildLocationPane(
     const dropdownItems = mapDropdownItems(storage);
 
     storage.dropdownMenu = locationPane.addDropdown(storage.locationPaneDataSource, 'currentSelection', {
-        titleStringId: 'sample.gotomark.pane.locationpane.dropdownLabel',
-        titleAltText: 'Stored Location',
+        title: 'sample.gotomark.pane.locationpane.dropdownLabel',
         dropdownItems: dropdownItems,
         onChange: (_obj: object, _property: string, _oldValue: object, _newValue: object) => {},
     });
@@ -291,8 +279,7 @@ function buildLocationPane(
             },
         }),
         {
-            titleStringId: 'sample.gotomark.pane.locationpane.button.teleport',
-            titleAltText: 'Jump to Stored Location',
+            title: 'sample.gotomark.pane.locationpane.button.teleport',
             visible: true,
         }
     );
@@ -327,15 +314,13 @@ function buildLocationPane(
             },
         }),
         {
-            titleStringId: 'sample.gotomark.pane.locationpane.button.delete',
-            titleAltText: 'Delete Stored Location',
+            title: 'sample.gotomark.pane.locationpane.button.delete',
             visible: true,
         }
     );
 
     locationPane.addString(storage.locationPaneDataSource, 'newName', {
-        titleAltText: 'New Name',
-        titleStringId: 'sample.gotomark.pane.locationpane.input.name',
+        title: 'sample.gotomark.pane.locationpane.input.name',
     });
 
     locationPane.addButton(
@@ -376,8 +361,7 @@ function buildLocationPane(
             },
         }),
         {
-            titleStringId: 'sample.gotomark.pane.locationpane.button.store',
-            titleAltText: 'Store Current Location as...',
+            title: 'sample.gotomark.pane.locationpane.button.store',
         }
     );
 }
