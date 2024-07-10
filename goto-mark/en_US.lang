@@ -13,4 +13,5 @@ sample.gotomark.pane.locationpane.title=Stored Locations
 sample.gotomark.pane.locationpane.button.teleport=Teleport to Stored Location
 sample.gotomark.pane.locationpane.button.delete=Delete Stored Location
 sample.gotomark.pane.locationpane.input.name=New Name
-sample.gotomark.pane.locationpane.button.store=Store Current Location As...
+sample.gotomark.pane.locationpane.button.store=Store Current Location As...
+sample.gotomark.pane.locationpane.dropdownLabel=Stored Location

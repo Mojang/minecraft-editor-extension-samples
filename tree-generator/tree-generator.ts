@@ -262,8 +262,7 @@ const TreeTypes = [
 function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
     // Create a pane that will be shown when the tool is selected
     const pane = uiSession.createPropertyPane({
-        titleStringId: 'sample.treegenerator.pane.title',
-        titleAltText: 'Tree Tool',
+        title: 'sample.treegenerator.pane.title',
     });
 
     // Set up an activation handler to show/hide the pane when the tool is activated/deactivated
@@ -334,13 +333,11 @@ function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
 
     // Add a dropdown for available tree types
     pane.addDropdown(settings, 'treeType', {
-        titleStringId: 'sample.treegenerator.pane.type',
-        titleAltText: 'Tree Type',
+        title: 'sample.treegenerator.pane.type',
         enable: true,
         dropdownItems: TreeTypes.reduce<IDropdownItem[]>((list, tree, index) => {
             list.push({
-                displayAltText: tree.name,
-                displayStringId: 'NO_ID',
+                label: tree.name,
                 value: index,
             });
             return list;
@@ -348,16 +345,14 @@ function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
     });
 
     pane.addNumber(settings, 'height', {
-        titleStringId: 'sample.treegenerator.pane.height',
-        titleAltText: 'Tree Height',
+        title: 'sample.treegenerator.pane.height',
         min: 1,
         max: 16,
         showSlider: true,
     });
 
     pane.addNumber(settings, 'randomHeightVariance', {
-        titleStringId: 'sample.treegenerator.pane.variance',
-        titleAltText: 'Tree Height Random Variance',
+        title: 'sample.treegenerator.pane.variance',
         min: 0,
         max: 5,
         showSlider: true,
@@ -370,7 +365,11 @@ function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
     });
 
     // Register the action as a keyboard shortcut
-    tool.registerKeyBinding(executeAction, KeyboardKey.KEY_T, InputModifier.None);
+    tool.registerKeyBinding(
+        executeAction,
+        { key: KeyboardKey.KEY_T },
+        { uniqueId: 'editorSamples:treeGenerator:place', label: 'sample.treegenerator.keyBinding.place' }
+    );
     tool.bindPropertyPane(pane);
 
     pane.hide();
@@ -406,11 +405,11 @@ function addTool(uiSession: IPlayerUISession) {
 
     const tool = uiSession.toolRail.addTool(
         {
-            displayStringId: 'sample.treegenerator.tool.title',
-            displayAltText: 'Tree Generator (CTRL + SHIFT + T)',
+            title: 'sample.treegenerator.tool.title',
             icon: 'pack://textures/tree-generator.png',
-            tooltipStringId: 'sample.treegenerator.tool.tooltip',
-            tooltipAltText: 'Click to place trees!',
+            tooltip: 'sample.treegenerator.tool.tooltip',
+            inputContextId: 'editorSamples:treeGenerator',
+            inputContextLabel: 'sample.treegenerator.tool.title',
         },
         toolToggleAction
     );
@@ -419,8 +418,8 @@ function addTool(uiSession: IPlayerUISession) {
     uiSession.inputManager.registerKeyBinding(
         EditorInputContext.GlobalToolMode,
         toolToggleAction,
-        KeyboardKey.KEY_T,
-        InputModifier.Control | InputModifier.Shift
+        { key: KeyboardKey.KEY_T, modifier: InputModifier.Control | InputModifier.Shift },
+        { uniqueId: 'editorSamples:treeGenerator:toggleTool', label: 'sample.treegenerator.keyBinding.toggleTool' }
     );
 
     return tool;
