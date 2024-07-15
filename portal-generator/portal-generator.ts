@@ -99,9 +99,11 @@ class PortalGenerator implements IDisposable {
         // Add the extension to the tool rail and give it an icon
         const tool = uiSession.toolRail.addTool(
             {
-                title: 'sample.portalgenerator.title',
+                displayStringId: 'sample.portalgenerator.title',
+                displayAltText: 'Portal Generator (CTRL + SHIFT + P)',
                 icon: 'pack://textures/portal-generator.png',
-                tooltip: 'sample.portalgenerator.tooltip',
+                tooltipStringId: 'sample.portalgenerator.tooltip',
+                tooltipAltText: 'Creates portals',
             },
             toolToggleAction
         );
@@ -110,11 +112,8 @@ class PortalGenerator implements IDisposable {
         uiSession.inputManager.registerKeyBinding(
             EditorInputContext.GlobalToolMode,
             toolToggleAction,
-            { key: KeyboardKey.KEY_P, modifier: InputModifier.Control | InputModifier.Shift },
-            {
-                uniqueId: 'editorSamples:portalGenerator:toggleTool',
-                label: 'sample.portalgenerator.keyBinding.toggleTool',
-            }
+            KeyboardKey.KEY_P,
+            InputModifier.Control | InputModifier.Shift
         );
 
         // Create an action that will be executed on left mouse click
@@ -147,13 +146,15 @@ class PortalGenerator implements IDisposable {
 
     buildPane(uiSession: PortalGeneratorSession) {
         const pane = uiSession.createPropertyPane({
-            title: 'sample.portalgenerator.pane.title',
+            titleStringId: 'sample.portalgenerator.pane.title',
+            titleAltText: 'Portal Generator',
         });
 
         this._dataSource = bindDataSource(pane, this._settings);
 
         pane.addBool(this._dataSource, 'replaceFloor', {
-            title: 'sample.portalgenerator.pane.replacefloor',
+            titleStringId: 'sample.portalgenerator.pane.replacefloor',
+            titleAltText: 'Replace Floor',
             onChange: (_obj: object, _property: string, _oldValue: object, _newValue: object) => {
                 const targetMode = this._dataSource?.replaceFloor ? CursorTargetMode.Block : CursorTargetMode.Face;
                 uiSession.extensionContext.cursor.setProperties({ targetMode });
@@ -161,14 +162,17 @@ class PortalGenerator implements IDisposable {
         });
 
         pane.addDropdown(this._dataSource, 'portalType', {
-            title: 'sample.portalgenerator.pane.portaltype',
+            titleStringId: 'sample.portalgenerator.pane.portaltype',
+            titleAltText: 'Portal Type',
             dropdownItems: [
                 {
-                    label: 'sample.portalgenerator.pane.portaltype.nether',
+                    displayAltText: 'Nether Portal',
+                    displayStringId: 'sample.portalgenerator.pane.portaltype.nether',
                     value: PortalType.Nether,
                 },
                 {
-                    label: 'sample.portalgenerator.pane.portaltype.end',
+                    displayAltText: 'End Portal',
+                    displayStringId: 'sample.portalgenerator.pane.portaltype.end',
                     value: PortalType.End,
                 },
             ],
@@ -260,20 +264,24 @@ class NetherPortal implements IPortalGenerator {
         }
 
         const subPane = windowPane.createPropertyPane({
-            title: 'sample.portalgenerator.pane.nether.pane.title',
+            titleStringId: 'sample.portalgenerator.pane.nether.pane.title',
+            titleAltText: 'Nether Portal',
         });
 
         this._dataSource = bindDataSource(subPane, this._settings);
 
         subPane.addDropdown(this._dataSource, 'orientation', {
-            title: 'sample.portalgenerator.pane.nether.pane.orientation',
+            titleStringId: 'sample.portalgenerator.pane.nether.pane.orientation',
+            titleAltText: 'Portal Orientation',
             dropdownItems: [
                 {
-                    label: 'sample.portalgenerator.pane.nether.pane.orientation.x',
+                    displayAltText: 'X Axis',
+                    displayStringId: 'sample.portalgenerator.pane.nether.pane.orientation.x',
                     value: PortalOrientation.X,
                 },
                 {
-                    label: 'sample.portalgenerator.pane.nether.pane.orientation.y',
+                    displayAltText: 'Z Axis',
+                    displayStringId: 'sample.portalgenerator.pane.nether.pane.orientation.y',
                     value: PortalOrientation.Z,
                 },
             ],
@@ -283,25 +291,29 @@ class NetherPortal implements IPortalGenerator {
         });
 
         subPane.addNumber(this._dataSource, 'sizeX', {
-            title: 'sample.portalgenerator.pane.nether.pane.width',
+            titleStringId: 'sample.portalgenerator.pane.nether.pane.width',
+            titleAltText: 'Block Width',
             min: 4,
             max: 33,
             showSlider: false,
         });
 
         subPane.addNumber(this._dataSource, 'sizeY', {
-            title: 'sample.portalgenerator.pane.nether.pane.height',
+            titleStringId: 'sample.portalgenerator.pane.nether.pane.height',
+            titleAltText: 'Block Height',
             min: 5,
             max: 33,
             showSlider: false,
         });
 
         subPane.addBool(this._dataSource, 'corners', {
-            title: 'sample.portalgenerator.pane.nether.pane.corners',
+            titleStringId: 'sample.portalgenerator.pane.nether.pane.corners',
+            titleAltText: 'Corners',
         });
 
         subPane.addNumber(this._dataSource, 'percentComplete', {
-            title: 'sample.portalgenerator.pane.nether.pane.percentage',
+            titleStringId: 'sample.portalgenerator.pane.nether.pane.percentage',
+            titleAltText: 'Percent Complete',
             min: 0,
             max: 100,
             showSlider: true,
@@ -474,13 +486,15 @@ class EndPortal implements IPortalGenerator {
         }
 
         const subPane = windowPane.createPropertyPane({
-            title: 'sample.portalgenerator.pane.end.pane.title',
+            titleStringId: 'sample.portalgenerator.pane.end.pane.title',
+            titleAltText: 'End Portal',
         });
 
         this._dataSource = bindDataSource(subPane, this._settings);
 
         subPane.addNumber(this._dataSource, 'filledEyeCount', {
-            title: 'sample.portalgenerator.pane.end.pane.filledcount',
+            titleStringId: 'sample.portalgenerator.pane.end.pane.filledcount',
+            titleAltText: 'Filled Eye of Ender Count',
             min: 0,
             max: 12,
             showSlider: true,

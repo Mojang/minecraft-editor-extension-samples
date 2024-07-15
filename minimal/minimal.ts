@@ -67,7 +67,8 @@ export function registerMinimalExtension() {
             // E.g. if you were to create a slider, the slider would be bound to a property 'mySlider' for example, and
             // when you adjust the slider, you can inspect the binding object property 'mySlider' for the current value.
             const extensionPane = uiSession.createPropertyPane({
-                title: 'sample.minimal.pane.title',
+                titleStringId: 'sample.minimal.pane.title',
+                titleAltText: 'Extension Pane',
             });
 
             // Bind the property bag containing your dynamic data to the property pane - this is the common area
@@ -95,7 +96,8 @@ export function registerMinimalExtension() {
 
             // Now create a button and bind the action you want to execute when it's pressed
             extensionPane.addButton(buttonAction, {
-                title: 'sample.minimal.pane.button.clickme',
+                titleStringId: 'sample.minimal.pane.button.clickme',
+                titleAltText: 'Click me!',
                 visible: true,
             });
 
@@ -105,7 +107,8 @@ export function registerMinimalExtension() {
                 .then((coreMenu: IMenu) => {
                     // Create a menu entry in the menu bar Core menu
                     const extensionMenu = coreMenu.addItem({
-                        label: 'sample.minimal.menu.title',
+                        displayStringId: 'sample.minimal.menu.title',
+                        name: 'My Extension',
                     });
 
                     // Adds a child menu item to show the property pane
@@ -113,7 +116,8 @@ export function registerMinimalExtension() {
                     // item is selected
                     extensionMenu.addItem(
                         {
-                            label: 'sample.minimal.menu.showpane',
+                            displayStringId: 'sample.minimal.menu.showpane',
+                            name: 'Show My Property Pane',
                         },
                         uiSession.actionManager.createAction({
                             actionType: ActionTypes.NoArgsAction,

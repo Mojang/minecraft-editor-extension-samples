@@ -6,6 +6,7 @@ import {
     CursorControlMode,
     EditorInputContext,
     IPlayerUISession,
+    InputModifier,
     KeyboardKey,
     registerEditorExtension,
 } from '@minecraft/server-editor';
@@ -112,20 +113,14 @@ export function registerCameraGrapple() {
             uiSession.inputManager.registerKeyBinding(
                 EditorInputContext.GlobalToolMode,
                 grappleAction,
-                { key: KeyboardKey.KEY_G },
-                {
-                    uniqueId: 'editorSamples:grapple:flyToCursor',
-                    label: 'sample.cameragrapple.keyBinding.flyToCursor',
-                }
+                KeyboardKey.KEY_G,
+                InputModifier.Control | InputModifier.Shift
             );
             uiSession.inputManager.registerKeyBinding(
                 EditorInputContext.GlobalToolMode,
                 frameAction,
-                { key: KeyboardKey.KEY_F },
-                {
-                    uniqueId: 'editorSamples:grapple:flyToSelection',
-                    label: 'sample.cameragrapple.keyBinding.flyToSelection',
-                }
+                KeyboardKey.KEY_F,
+                InputModifier.Control | InputModifier.Shift
             );
 
             return [];

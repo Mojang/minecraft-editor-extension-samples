@@ -104,14 +104,17 @@ export class SimpleLocate extends SimpleToolWrapper {
         // Create a dropdown with two options: Biome and Structure
         // and an event handler to show the appropriate sub-pane when the selection changes
         actualPane.addDropdown(locatorType, 'locateMode', {
-            title: 'sample.simplelocate.tool.locatetype.title',
+            titleStringId: 'sample.simplelocate.tool.locatetype.title',
+            titleAltText: 'Locate Type',
             dropdownItems: [
                 {
-                    label: 'sample.simplelocate.tool.locatetype.biome',
+                    displayStringId: 'sample.simplelocate.tool.locatetype.biome',
+                    displayAltText: 'Biome',
                     value: LocateMode.Biome,
                 },
                 {
-                    label: 'sample.simplelocate.tool.locatetype.structure',
+                    displayStringId: 'sample.simplelocate.tool.locatetype.structure',
+                    displayAltText: 'Structure',
                     value: LocateMode.Structure,
                 },
             ],
@@ -138,14 +141,16 @@ export class SimpleLocate extends SimpleToolWrapper {
         const listOfBiomes = BiomeTypes.getAll().map((v, i) => {
             const names = v.id;
             const item: IDropdownItem = {
-                label: names.replace('minecraft:', '').replace('_', ' '),
+                displayAltText: names.replace('minecraft:', '').replace('_', ' '),
+                displayStringId: names,
                 value: i,
             };
             return item;
         });
 
         actualPane.addDropdown(biomeType, 'biomeId', {
-            title: 'sample.simplelocate.tool.biome.title',
+            titleStringId: 'sample.simplelocate.tool.biome.title',
+            titleAltText: 'Biome',
             dropdownItems: listOfBiomes,
             onChange: (_obj: object, _property: string, _oldValue: object, _newValue: object) => {
                 component.simpleTool.hidePane('results');
@@ -167,7 +172,8 @@ export class SimpleLocate extends SimpleToolWrapper {
         });
 
         actualPane.addButton(locateBiomeAction, {
-            title: 'sample.simplelocate.tool.biome.find',
+            titleStringId: 'sample.simplelocate.tool.biome.find',
+            titleAltText: 'Find Biome',
             visible: true,
             icon: 'pinIcon',
         });
@@ -186,7 +192,8 @@ export class SimpleLocate extends SimpleToolWrapper {
         actualPane.addText({ text: `Found ${this._results.foundType}` }, 'text');
 
         actualPane.addVector3(this._results, 'foundPos', {
-            title: 'sample.simplelocate.tool.results.foundat',
+            titleAltText: 'Found At',
+            titleStringId: 'sample.simplelocate.tool.results.foundat',
             enable: false,
             visible: true,
         });
@@ -200,7 +207,8 @@ export class SimpleLocate extends SimpleToolWrapper {
                 },
             }),
             {
-                title: 'sample.simplelocate.tool.results.goto',
+                titleAltText: `Jump To Location`,
+                titleStringId: 'sample.simplelocate.tool.results.goto',
             }
         );
     }
@@ -219,19 +227,14 @@ export class SimpleLocate extends SimpleToolWrapper {
         const toolOptions: ISimpleToolOptions = {
             name: 'Simple Locate Biome',
             activationKeyBinding: {
-                binding: {
-                    key: KeyboardKey.KEY_L,
-                    modifier: InputModifier.Control | InputModifier.Shift,
-                },
-                info: {
-                    uniqueId: 'editorSample:locateBiomeToolKeyBinding:toggleTool',
-                    label: 'sample.simplelocate.tool.keyBinding.toggleTool',
-                },
+                button: KeyboardKey.KEY_L,
+                buttonModifier: InputModifier.Control | InputModifier.Shift,
             },
 
             propertyPaneOptions: {
                 id: 'pane',
-                title: 'sample.simplelocate.tool.title',
+                titleStringId: 'sample.simplelocate.tool.title',
+                titleAltText: 'Locate',
 
                 childPaneInitiallyVisible: 'typeSelector',
 
@@ -245,7 +248,8 @@ export class SimpleLocate extends SimpleToolWrapper {
                 childPanes: [
                     {
                         id: 'typeSelector',
-                        title: 'sample.simplelocate.tool.locatetype.title',
+                        titleAltText: 'Locate Type',
+                        titleStringId: 'sample.simplelocate.tool.locatetype.title',
 
                         onBeginFinalize: component => this.buildTypeSelectionPane(component),
 
@@ -255,32 +259,37 @@ export class SimpleLocate extends SimpleToolWrapper {
                         childPanes: [
                             {
                                 id: 'type-biome',
-                                title: 'sample.simplelocate.tool.locatetype.biome.title',
+                                titleAltText: 'Find Biome',
+                                titleStringId: 'sample.simplelocate.tool.locatetype.biome.title',
                                 onBeginFinalize: component => this.buildBiomeSearchPane(component),
                             },
                             {
                                 id: 'type-structure',
-                                title: 'sample.simplelocate.tool.locatetype.structure.title',
+                                titleAltText: 'Find Structure',
+                                titleStringId: 'sample.simplelocate.tool.locatetype.structure.title',
                                 onBeginFinalize: component => this.buildStructurePane(component),
                             },
                         ],
                     },
                     {
                         id: 'results',
-                        title: 'sample.simplelocate.tool.results.title',
+                        titleAltText: 'Results',
+                        titleStringId: 'sample.simplelocate.tool.results.title',
 
                         childPanesMutuallyExclusive: true,
 
                         childPanes: [
                             {
                                 id: 'results-found',
-                                title: 'sample.simplelocate.tool.results.foundat.title',
+                                titleAltText: 'Found',
+                                titleStringId: 'sample.simplelocate.tool.results.foundat.title',
 
                                 onBeginFinalize: component => this.buildResultsPane(component),
                             },
                             {
                                 id: 'results-notfound',
-                                title: 'sample.simplelocate.tool.results.notfound.title',
+                                titleAltText: 'No Results',
+                                titleStringId: 'sample.simplelocate.tool.results.notfound.title',
 
                                 onBeginFinalize: component => this.buildNoResultsPane(component),
                             },
