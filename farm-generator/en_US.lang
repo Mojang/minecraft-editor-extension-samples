@@ -18,6 +18,4 @@ sample.farmgenerator.pane.crops.carrot=Carrot
 sample.farmgenerator.pane.animals.title=Animals
 sample.farmgenerator.pane.animals.cow=Cow
 sample.farmgenerator.pane.animals.sheep=Sheep
-sample.farmgenerator.pane.animals.pig=Pig
-sample.farmgenerator.keyBinding.toggleTool=Toggle Farm Generator Tool
-sample.farmgenerator.keyBinding.place=Place Farm At Cursor
+sample.farmgenerator.pane.animals.pig=Pig

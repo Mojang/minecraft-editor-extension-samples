@@ -2,6 +2,4 @@
 ##
 ## Note, trailing spaces will NOT be trimmed. If you want room between the end of the string and the start of a
 ## comment on the same line, use TABs.
-sample.cameragrapple.title=Camera Base Grapple
-sample.cameragrapple.keyBinding.flyToCursor=Fly To Cursor
-sample.cameragrapple.keyBinding.flyToSelection=Fly To Selection
+sample.cameragrapple.title=Camera Base Grapple

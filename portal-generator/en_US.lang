@@ -18,5 +18,4 @@ sample.portalgenerator.pane.nether.pane.height=Block Height
 sample.portalgenerator.pane.nether.pane.corners=Corners
 sample.portalgenerator.pane.nether.pane.percentage=Percentage Complete
 sample.portalgenerator.pane.end.pane.title=End Portal
-sample.portalgenerator.pane.end.pane.filledcount=Filled 'Eye of Ender' count
-sample.portalgenerator.keyBinding.toggleTool=Toggle Portal Generator Tool
+sample.portalgenerator.pane.end.pane.filledcount=Filled 'Eye of Ender' count
