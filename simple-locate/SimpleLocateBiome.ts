@@ -175,17 +175,16 @@ export class SimpleLocate extends SimpleToolWrapper {
 
     buildStructurePane(component: ISimpleToolPaneComponent): void {
         const actualPane = component.pane;
-        actualPane.addText({ t: 'Structure searching is not currently supported' }, 't', {
+        actualPane.addText('sample.simplelocate.tool.structure.message', {
             border: true,
-            valueStringId: 'sample.simplelocate.tool.structure.message',
         });
     }
 
     buildResultsPane(component: ISimpleToolPaneComponent): void {
         const actualPane = component.pane;
-        actualPane.addText({ text: `Found ${this._results.foundType}` }, 'text');
+        actualPane.addText(`Found ${this._results.foundType}`);
 
-        actualPane.addVector3(this._results, 'foundPos', {
+        actualPane.addVector3_deprecated(this._results, 'foundPos', {
             title: 'sample.simplelocate.tool.results.foundat',
             enable: false,
             visible: true,
@@ -207,9 +206,8 @@ export class SimpleLocate extends SimpleToolWrapper {
 
     buildNoResultsPane(component: ISimpleToolPaneComponent): void {
         const actualPane = component.pane;
-        actualPane.addText({ t: 'No Results Found' }, 't', {
+        actualPane.addText('sample.simplelocate.tool.results.notfound', {
             border: true,
-            valueStringId: 'sample.simplelocate.tool.results.notfound',
         });
     }
 

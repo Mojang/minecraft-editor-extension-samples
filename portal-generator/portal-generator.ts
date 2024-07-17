@@ -1,6 +1,13 @@
 // Copyright (c) Mojang AB.  All rights reserved.
 
-import { CursorTargetMode, IDisposable, Ray } from '@minecraft/server-editor';
+import {
+    BoolPropertyItemVariant,
+    CursorTargetMode,
+    IDisposable,
+    IObservable,
+    makeObservable,
+    Ray,
+} from '@minecraft/server-editor';
 import {
     bindDataSource,
     IPlayerUISession,
@@ -35,7 +42,6 @@ type ExtensionStorage = {
 type PortalGeneratorSession = IPlayerUISession<ExtensionStorage>;
 
 type PaneDataSourceType = {
-    replaceFloor: boolean;
     portalType: PortalType;
 };
 
@@ -43,7 +49,6 @@ type NetherDataSourceType = {
     sizeX: number;
     sizeY: number;
     orientation: PortalOrientation;
-    corners: boolean;
     percentComplete: number;
 };
 
@@ -69,9 +74,11 @@ class PortalGenerator implements IDisposable {
 
     private _pane?: IPropertyPane;
     private _settings: PaneDataSourceType = {
-        replaceFloor: true,
         portalType: PortalType.Nether,
     };
+
+    private _shouldReplaceFloor: IObservable<boolean> = makeObservable(true);
+
     private _dataSource?: PaneDataSourceType;
 
     constructor() {
@@ -152,12 +159,13 @@ class PortalGenerator implements IDisposable {
 
         this._dataSource = bindDataSource(pane, this._settings);
 
-        pane.addBool(this._dataSource, 'replaceFloor', {
+        pane.addBool(this._shouldReplaceFloor, {
             title: 'sample.portalgenerator.pane.replacefloor',
-            onChange: (_obj: object, _property: string, _oldValue: object, _newValue: object) => {
-                const targetMode = this._dataSource?.replaceFloor ? CursorTargetMode.Block : CursorTargetMode.Face;
+            onChange: (current: boolean) => {
+                const targetMode = current ? CursorTargetMode.Block : CursorTargetMode.Face;
                 uiSession.extensionContext.cursor.setProperties({ targetMode });
             },
+            variant: BoolPropertyItemVariant.ToggleSwitch,
         });
 
         pane.addDropdown(this._dataSource, 'portalType', {
@@ -210,10 +218,11 @@ class NetherPortal implements IPortalGenerator {
         sizeX: 4,
         sizeY: 5,
         orientation: PortalOrientation.X,
-        corners: true,
         percentComplete: 100,
     };
     private _dataSource?: NetherDataSourceType;
+
+    private _hasCorners: IObservable<boolean> = makeObservable(true);
 
     constructor() {}
 
@@ -296,8 +305,9 @@ class NetherPortal implements IPortalGenerator {
             showSlider: false,
         });
 
-        subPane.addBool(this._dataSource, 'corners', {
+        subPane.addBool(this._hasCorners, {
             title: 'sample.portalgenerator.pane.nether.pane.corners',
+            tooltip: 'sample.portalgenerator.pane.nether.pane.corners.tooltip',
         });
 
         subPane.addNumber(this._dataSource, 'percentComplete', {
@@ -369,7 +379,7 @@ class NetherPortal implements IPortalGenerator {
 
                 // Set as obsidian for bottom, top, and edges of portal
                 if (
-                    !this._dataSource.corners &&
+                    !this._hasCorners.value &&
                     ((y === 0 && x === 0) ||
                         (y === 0 && x === xEnd) ||
                         (y === yEnd && x === xEnd) ||
