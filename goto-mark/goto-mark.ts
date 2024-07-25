@@ -2,6 +2,7 @@
 
 import {
     ActionTypes,
+    IButtonPropertyItem,
     IDropdownItem,
     IDropdownPropertyItem,
     IModalTool,
@@ -58,6 +59,8 @@ type ExtensionStorage = {
     storedLocations: LocationData[]; // The list of stored locations
 
     transactionHandler: UserDefinedTransactionHandle<GotoTeleportTransactionPayload>; // The transaction handler for the extension
+
+    teleportButton?: IButtonPropertyItem;
 };
 
 // Handy helper to turn a Vector3 into a pretty string
@@ -132,7 +135,7 @@ function buildParentPane(uiSession: IPlayerUISession<ExtensionStorage>, storage:
     storage.parentPaneDataSource = bindDataSource(parentPane, initialPaneData);
     storage.previousLocation = currentLocation;
 
-    parentPane.addVector3(storage.parentPaneDataSource, 'playerLocation', {
+    parentPane.addVector3_deprecated(storage.parentPaneDataSource, 'playerLocation', {
         title: 'sample.gotomark.pane.location',
     });
 
@@ -253,13 +256,20 @@ function buildLocationPane(
     storage.dropdownMenu = locationPane.addDropdown(storage.locationPaneDataSource, 'currentSelection', {
         title: 'sample.gotomark.pane.locationpane.dropdownLabel',
         dropdownItems: dropdownItems,
-        onChange: (_obj: object, _property: string, _oldValue: object, _newValue: object) => {},
+        onChange: (_obj: object, _property: string, _oldValue: object, _newValue: object) => {
+            if (storage.teleportButton) {
+                storage.teleportButton.setTitle({
+                    id: 'sample.gotomark.pane.locationpane.button.teleport',
+                    props: [`${(_newValue as unknown as number) + 1}`],
+                });
+            }
+        },
     });
 
     locationPane.addDivider();
 
     // Jump to the stored location selected in the dropdown
-    locationPane.addButton(
+    storage.teleportButton = locationPane.addButton(
         uiSession.actionManager.createAction({
             actionType: ActionTypes.NoArgsAction,
             onExecute: () => {
@@ -279,7 +289,10 @@ function buildLocationPane(
             },
         }),
         {
-            title: 'sample.gotomark.pane.locationpane.button.teleport',
+            title: {
+                id: 'sample.gotomark.pane.locationpane.button.teleport',
+                props: [dropdownItems.length > 0 ? `${storage.locationPaneDataSource.currentSelection + 1}` : ''],
+            },
             visible: true,
         }
     );
@@ -311,6 +324,11 @@ function buildLocationPane(
                     dropdownItems,
                     storage.locationPaneDataSource.currentSelection
                 );
+
+                storage.teleportButton?.setTitle({
+                    id: 'sample.gotomark.pane.locationpane.button.teleport',
+                    props: [dropdownItems.length > 0 ? `${storage.locationPaneDataSource.currentSelection + 1}` : ''],
+                });
             },
         }),
         {
