@@ -9,6 +9,7 @@ sample.farmgenerator.pane.length=Length
 sample.farmgenerator.pane.width=Width
 sample.farmgenerator.pane.fence=Fence
 sample.farmgenerator.pane.irrigation=Add Irrigation
+sample.farmgenerator.pane.irrigation.tooltip=Adds water blocks in the farm to irrigate crops.
 sample.farmgenerator.pane.crops.title=Crops
 sample.farmgenerator.pane.crops.wheat=Wheat
 sample.farmgenerator.pane.crops.potato=Potato
