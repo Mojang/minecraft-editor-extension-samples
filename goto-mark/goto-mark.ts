@@ -2,13 +2,16 @@
 
 import {
     ActionTypes,
+    IButtonPropertyItem,
     IDropdownItem,
     IDropdownPropertyItem,
     IModalTool,
+    IObservable,
     IPlayerUISession,
     IPropertyPane,
     UserDefinedTransactionHandle,
     bindDataSource,
+    makeObservable,
     registerEditorExtension,
     registerUserDefinedTransactionHandler,
     stringFromException,
@@ -38,8 +41,7 @@ type ParentPaneDataSourceType = {
 
 // UI Pane data for the sub pane with the stored locations
 type LocationPaneDataSourceType = {
-    currentSelection: number;
-    newName: string;
+    newName: IObservable<string>;
 };
 
 // Extension storage data which is pertinent to the the player's context of this extension
@@ -51,13 +53,15 @@ type ExtensionStorage = {
 
     parentPaneDataSource?: ParentPaneDataSourceType; // The data source for the parent pane
     parentPane?: IPropertyPane; // The parent pane
-    dropdownMenu?: IDropdownPropertyItem<LocationPaneDataSourceType, 'currentSelection'>; // The dropdown
+    dropdownMenu?: IDropdownPropertyItem; // The dropdown
 
     locationPaneDataSource?: LocationPaneDataSourceType; // The data source for the location pane
 
     storedLocations: LocationData[]; // The list of stored locations
 
     transactionHandler: UserDefinedTransactionHandle<GotoTeleportTransactionPayload>; // The transaction handler for the extension
+
+    teleportButton?: IButtonPropertyItem;
 };
 
 // Handy helper to turn a Vector3 into a pretty string
@@ -132,7 +136,7 @@ function buildParentPane(uiSession: IPlayerUISession<ExtensionStorage>, storage:
     storage.parentPaneDataSource = bindDataSource(parentPane, initialPaneData);
     storage.previousLocation = currentLocation;
 
-    parentPane.addVector3(storage.parentPaneDataSource, 'playerLocation', {
+    parentPane.addVector3_deprecated(storage.parentPaneDataSource, 'playerLocation', {
         title: 'sample.gotomark.pane.location',
     });
 
@@ -242,24 +246,32 @@ function buildLocationPane(
         title: 'sample.gotomark.pane.locationpane.title',
     });
 
+    const currentSelection = makeObservable(initialSelection);
+
     const initialPaneData: LocationPaneDataSourceType = {
-        currentSelection: initialSelection,
-        newName: '',
+        newName: makeObservable(''),
     };
     storage.locationPaneDataSource = bindDataSource(locationPane, initialPaneData);
 
     const dropdownItems = mapDropdownItems(storage);
 
-    storage.dropdownMenu = locationPane.addDropdown(storage.locationPaneDataSource, 'currentSelection', {
+    storage.dropdownMenu = locationPane.addDropdown(currentSelection, {
         title: 'sample.gotomark.pane.locationpane.dropdownLabel',
-        dropdownItems: dropdownItems,
-        onChange: (_obj: object, _property: string, _oldValue: object, _newValue: object) => {},
+        entries: dropdownItems,
+        onChange: (newValue: number) => {
+            if (storage.teleportButton) {
+                storage.teleportButton.setTitle({
+                    id: 'sample.gotomark.pane.locationpane.button.teleport',
+                    props: [`${newValue + 1}`],
+                });
+            }
+        },
     });
 
     locationPane.addDivider();
 
     // Jump to the stored location selected in the dropdown
-    locationPane.addButton(
+    storage.teleportButton = locationPane.addButton(
         uiSession.actionManager.createAction({
             actionType: ActionTypes.NoArgsAction,
             onExecute: () => {
@@ -268,18 +280,20 @@ function buildLocationPane(
                     return;
                 }
 
-                const currentSelection = storage.locationPaneDataSource.currentSelection;
-                if (currentSelection < 0 || currentSelection >= storage.storedLocations.length) {
+                if (currentSelection.value < 0 || currentSelection.value >= storage.storedLocations.length) {
                     uiSession.log.error('No stored locations to delete');
                     return;
                 }
 
-                const destination = storage.storedLocations[currentSelection].location;
+                const destination = storage.storedLocations[currentSelection.value].location;
                 teleportTo(uiSession, destination);
             },
         }),
         {
-            title: 'sample.gotomark.pane.locationpane.button.teleport',
+            title: {
+                id: 'sample.gotomark.pane.locationpane.button.teleport',
+                props: [dropdownItems.length > 0 ? `${currentSelection.value + 1}` : ''],
+            },
             visible: true,
         }
     );
@@ -293,24 +307,28 @@ function buildLocationPane(
                     return;
                 }
 
-                const currentSelection = storage.locationPaneDataSource.currentSelection;
-                if (currentSelection < 0 || currentSelection >= storage.storedLocations.length) {
+                const selectionValue = currentSelection.value;
+                if (selectionValue < 0 || selectionValue >= storage.storedLocations.length) {
                     uiSession.log.error('No stored locations to delete');
                     return;
                 }
-                const locationData = storage.storedLocations[currentSelection];
+                const locationData = storage.storedLocations[selectionValue];
                 const locationName = locationData.name;
 
                 uiSession.log.info(`Deleting stored location name "${locationName}"`);
-                storage.storedLocations.splice(currentSelection, 1);
+                storage.storedLocations.splice(selectionValue, 1);
 
                 storeLocationsToPlayer(uiSession, storage);
 
                 const dropdownItems = mapDropdownItems(storage);
-                storage.dropdownMenu?.updateDropdownItems(
-                    dropdownItems,
-                    storage.locationPaneDataSource.currentSelection
-                );
+                const newValue =
+                    selectionValue >= dropdownItems.length && selectionValue > 0 ? selectionValue - 1 : selectionValue;
+                storage.dropdownMenu?.updateEntries(dropdownItems, newValue);
+
+                storage.teleportButton?.setTitle({
+                    id: 'sample.gotomark.pane.locationpane.button.teleport',
+                    props: [dropdownItems.length > 0 ? `${newValue + 1}` : ''],
+                });
             },
         }),
         {
@@ -319,7 +337,7 @@ function buildLocationPane(
         }
     );
 
-    locationPane.addString(storage.locationPaneDataSource, 'newName', {
+    locationPane.addString(storage.locationPaneDataSource.newName, {
         title: 'sample.gotomark.pane.locationpane.input.name',
     });
 
@@ -336,19 +354,19 @@ function buildLocationPane(
                     return;
                 }
                 const currentLocation = vector3Truncate(storage.parentPaneDataSource.playerLocation);
-                let newName = storage.locationPaneDataSource?.newName;
-                if (!newName) {
-                    newName = `Location ${storage.storedLocations.length + 1}`;
+                const newName = storage.locationPaneDataSource.newName;
+                if (!newName.value) {
+                    newName.set(`Location ${storage.storedLocations.length + 1}`);
                 } else {
-                    newName = newName.trim();
-                    if (newName.length > storedLocationNameMaxLength) {
-                        newName = newName.substring(0, storedLocationNameMaxLength);
+                    const trimmedName = newName.value.trim();
+                    if (trimmedName.length > storedLocationNameMaxLength) {
+                        newName.set(trimmedName.substring(0, storedLocationNameMaxLength));
                     }
                 }
 
-                uiSession.log.info(`Adding Location ${vector3ToString(currentLocation)} as "${newName}"`);
+                uiSession.log.info(`Adding Location ${vector3ToString(currentLocation)} as "${newName.value}"`);
                 storage.storedLocations.push({
-                    name: newName,
+                    name: newName.value,
                     location: currentLocation,
                 });
 
@@ -357,7 +375,12 @@ function buildLocationPane(
                 const newSelectionIndex = storage.storedLocations.length - 1;
 
                 const dropdownItems = mapDropdownItems(storage);
-                storage.dropdownMenu?.updateDropdownItems(dropdownItems, newSelectionIndex);
+                storage.dropdownMenu?.updateEntries(dropdownItems, newSelectionIndex);
+
+                storage.teleportButton?.setTitle({
+                    id: 'sample.gotomark.pane.locationpane.button.teleport',
+                    props: [`${newSelectionIndex + 1}`],
+                });
             },
         }),
         {

@@ -3,8 +3,9 @@
 import {
     ActionTypes,
     EditorInputContext,
-    IDropdownItem,
+    IDropdownPropertyItemEntry,
     IModalTool,
+    IObservable,
     IPlayerUISession,
     InputModifier,
     KeyboardKey,
@@ -12,17 +13,18 @@ import {
     MouseActionType,
     MouseInputType,
     MouseProps,
+    NumberPropertyItemVariant,
     Ray,
-    bindDataSource,
+    makeObservable,
     registerEditorExtension,
 } from '@minecraft/server-editor';
 import { BlockPermutation, Vector3 } from '@minecraft/server';
 import { MinecraftBlockTypes } from '@minecraft/vanilla-data';
 
 interface TreeToolSettings {
-    height: number;
-    randomHeightVariance: number;
-    treeType: number;
+    height: IObservable<number>;
+    randomHeightVariance: IObservable<number>;
+    treeType: IObservable<number>;
 }
 
 interface TreeBlockChangeData {
@@ -47,8 +49,8 @@ export class SimpleTree implements ITree {
         const result: TreeBlockChangeData[] = [];
 
         const heightOffset =
-            Math.floor(Math.random() * settings.randomHeightVariance) - settings.randomHeightVariance / 2;
-        const calculatedHeight = settings.height + heightOffset;
+            Math.floor(Math.random() * settings.randomHeightVariance.value) - settings.randomHeightVariance.value / 2;
+        const calculatedHeight = settings.height.value + heightOffset;
 
         ///
         // Trunk
@@ -274,12 +276,12 @@ function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
         }
     });
 
-    // Create a data object for pane controls
-    const settings = bindDataSource(pane, {
-        height: 5,
-        treeType: 0,
-        randomHeightVariance: 0,
-    });
+    // Settings
+    const settings: TreeToolSettings = {
+        height: makeObservable(5),
+        randomHeightVariance: makeObservable(0),
+        treeType: makeObservable(0),
+    };
 
     const onExecuteTool = (ray?: Ray) => {
         const player = uiSession.extensionContext.player;
@@ -306,7 +308,7 @@ function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
         // Begin transaction
         uiSession.extensionContext.transactionManager.openTransaction('Tree Tool');
 
-        const selectedTreeType = TreeTypes[settings.treeType];
+        const selectedTreeType = TreeTypes[settings.treeType.value];
         const affectedBlocks = selectedTreeType.type.place(location, settings);
 
         // Track changes
@@ -332,30 +334,31 @@ function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
     };
 
     // Add a dropdown for available tree types
-    pane.addDropdown(settings, 'treeType', {
+    pane.addDropdown(settings.treeType, {
         title: 'sample.treegenerator.pane.type',
         enable: true,
-        dropdownItems: TreeTypes.reduce<IDropdownItem[]>((list, tree, index) => {
-            list.push({
+        entries: TreeTypes.map((tree, index): IDropdownPropertyItemEntry => {
+            return {
                 label: tree.name,
                 value: index,
-            });
-            return list;
+            };
         }, []),
     });
 
-    pane.addNumber(settings, 'height', {
+    pane.addNumber(settings.height, {
         title: 'sample.treegenerator.pane.height',
         min: 1,
         max: 16,
-        showSlider: true,
+        variant: NumberPropertyItemVariant.InputFieldAndSlider,
+        isInteger: true,
     });
 
-    pane.addNumber(settings, 'randomHeightVariance', {
+    pane.addNumber(settings.randomHeightVariance, {
         title: 'sample.treegenerator.pane.variance',
         min: 0,
         max: 5,
-        showSlider: true,
+        variant: NumberPropertyItemVariant.InputFieldAndSlider,
+        isInteger: true,
     });
 
     // Create and an action that will be executed on key press
