@@ -1,8 +1,16 @@
 // Copyright (c) Mojang AB.  All rights reserved.
 
-import { CursorTargetMode, IDisposable, Ray } from '@minecraft/server-editor';
 import {
-    bindDataSource,
+    BoolPropertyItemVariant,
+    CursorTargetMode,
+    IDisposable,
+    ImageResourceType,
+    IObservable,
+    makeObservable,
+    NumberPropertyItemVariant,
+    Ray,
+} from '@minecraft/server-editor';
+import {
     IPlayerUISession,
     registerEditorExtension,
     IModalTool,
@@ -34,21 +42,9 @@ type ExtensionStorage = {
 
 type PortalGeneratorSession = IPlayerUISession<ExtensionStorage>;
 
-type PaneDataSourceType = {
-    replaceFloor: boolean;
-    portalType: PortalType;
-};
-
-type NetherDataSourceType = {
-    sizeX: number;
-    sizeY: number;
-    orientation: PortalOrientation;
-    corners: boolean;
-    percentComplete: number;
-};
-
-type EndDataSourceType = {
-    filledEyeCount: number;
+type PaneSettingsType = {
+    portalType: IObservable<number>;
+    shouldReplaceFloor: IObservable<boolean>;
 };
 
 interface IPortalGenerator {
@@ -68,11 +64,10 @@ class PortalGenerator implements IDisposable {
     private _activePortal?: IPortalGenerator;
 
     private _pane?: IPropertyPane;
-    private _settings: PaneDataSourceType = {
-        replaceFloor: true,
-        portalType: PortalType.Nether,
+    private _settings: PaneSettingsType = {
+        portalType: makeObservable<number>(PortalType.Nether),
+        shouldReplaceFloor: makeObservable(true),
     };
-    private _dataSource?: PaneDataSourceType;
 
     constructor() {
         this._netherPortal = new NetherPortal();
@@ -137,9 +132,9 @@ class PortalGenerator implements IDisposable {
         // Build the UI components (and the sub pane with the options)
         this.buildPane(uiSession);
 
-        if (this._pane && this._dataSource) {
+        if (this._pane) {
             tool.bindPropertyPane(this._pane);
-            this.activatePortalGenerator(uiSession, this._dataSource.portalType);
+            this.activatePortalGenerator(uiSession, this._settings.portalType.value);
         }
     }
 
@@ -150,31 +145,31 @@ class PortalGenerator implements IDisposable {
             title: 'sample.portalgenerator.pane.title',
         });
 
-        this._dataSource = bindDataSource(pane, this._settings);
-
-        pane.addBool(this._dataSource, 'replaceFloor', {
+        pane.addBool(this._settings.shouldReplaceFloor, {
             title: 'sample.portalgenerator.pane.replacefloor',
-            onChange: (_obj: object, _property: string, _oldValue: object, _newValue: object) => {
-                const targetMode = this._dataSource?.replaceFloor ? CursorTargetMode.Block : CursorTargetMode.Face;
+            onChange: (current: boolean) => {
+                const targetMode = current ? CursorTargetMode.Block : CursorTargetMode.Face;
                 uiSession.extensionContext.cursor.setProperties({ targetMode });
             },
+            variant: BoolPropertyItemVariant.ToggleSwitch,
         });
 
-        pane.addDropdown(this._dataSource, 'portalType', {
+        pane.addDropdown(this._settings.portalType, {
             title: 'sample.portalgenerator.pane.portaltype',
-            dropdownItems: [
+            entries: [
                 {
                     label: 'sample.portalgenerator.pane.portaltype.nether',
                     value: PortalType.Nether,
+                    imageData: { path: 'portal', type: ImageResourceType.Block },
                 },
                 {
                     label: 'sample.portalgenerator.pane.portaltype.end',
                     value: PortalType.End,
+                    imageData: { path: 'enderEyeIcon', type: ImageResourceType.Icon },
                 },
             ],
-            onChange: (_obj: object, _property: string, _oldValue: object, _newValue: object) => {
-                const portalType = this._dataSource?.portalType as PortalType;
-                this.activatePortalGenerator(uiSession, portalType);
+            onChange: (newValue: number) => {
+                this.activatePortalGenerator(uiSession, newValue);
             },
         });
 
@@ -206,14 +201,12 @@ class NetherPortal implements IPortalGenerator {
     private _pane?: IPropertyPane;
     private _parentPane?: IPropertyPane;
 
-    private _settings: NetherDataSourceType = {
-        sizeX: 4,
-        sizeY: 5,
-        orientation: PortalOrientation.X,
-        corners: true,
-        percentComplete: 100,
-    };
-    private _dataSource?: NetherDataSourceType;
+    // Settings
+    private _sizeX: IObservable<number> = makeObservable(4);
+    private _sizeY: IObservable<number> = makeObservable(5);
+    private _percentComplete: IObservable<number> = makeObservable(100);
+    private _orientation: IObservable<number> = makeObservable(PortalOrientation.X);
+    private _hasCorners: IObservable<boolean> = makeObservable(true);
 
     constructor() {}
 
@@ -239,16 +232,11 @@ class NetherPortal implements IPortalGenerator {
     }
 
     deactivatePane(): void {
-        if (this._dataSource) {
-            this._settings = this._dataSource;
-        }
-
         if (this._pane) {
             this._pane.hide();
             this._parentPane?.removePropertyPane(this._pane);
         }
 
-        this._dataSource = undefined;
         this._pane = undefined;
     }
 
@@ -263,11 +251,9 @@ class NetherPortal implements IPortalGenerator {
             title: 'sample.portalgenerator.pane.nether.pane.title',
         });
 
-        this._dataSource = bindDataSource(subPane, this._settings);
-
-        subPane.addDropdown(this._dataSource, 'orientation', {
+        subPane.addDropdown(this._orientation, {
             title: 'sample.portalgenerator.pane.nether.pane.orientation',
-            dropdownItems: [
+            entries: [
                 {
                     label: 'sample.portalgenerator.pane.nether.pane.orientation.x',
                     value: PortalOrientation.X,
@@ -277,34 +263,32 @@ class NetherPortal implements IPortalGenerator {
                     value: PortalOrientation.Z,
                 },
             ],
-            onChange: (obj: object, _property: string, _oldValue: object, _newValue: object) => {
-                this._settings.orientation = Number(_newValue);
-            },
         });
 
-        subPane.addNumber(this._dataSource, 'sizeX', {
+        subPane.addNumber(this._sizeX, {
             title: 'sample.portalgenerator.pane.nether.pane.width',
             min: 4,
             max: 33,
-            showSlider: false,
+            isInteger: true,
         });
 
-        subPane.addNumber(this._dataSource, 'sizeY', {
+        subPane.addNumber(this._sizeY, {
             title: 'sample.portalgenerator.pane.nether.pane.height',
             min: 5,
             max: 33,
-            showSlider: false,
+            isInteger: true,
         });
 
-        subPane.addBool(this._dataSource, 'corners', {
+        subPane.addBool(this._hasCorners, {
             title: 'sample.portalgenerator.pane.nether.pane.corners',
+            tooltip: 'sample.portalgenerator.pane.nether.pane.corners.tooltip',
         });
 
-        subPane.addNumber(this._dataSource, 'percentComplete', {
+        subPane.addNumber(this._percentComplete, {
             title: 'sample.portalgenerator.pane.nether.pane.percentage',
             min: 0,
             max: 100,
-            showSlider: true,
+            variant: NumberPropertyItemVariant.InputFieldAndSlider,
         });
 
         return subPane;
@@ -320,7 +304,7 @@ class NetherPortal implements IPortalGenerator {
             return;
         }
 
-        if (this._dataSource?.percentComplete === 0) {
+        if (this._percentComplete.value === 0) {
             return;
         }
 
@@ -334,17 +318,17 @@ class NetherPortal implements IPortalGenerator {
         let from: Vector3 = location;
         let to: Vector3 = { x: 0, y: 0, z: 0 };
 
-        if (this._dataSource?.orientation === PortalOrientation.X) {
+        if (this._orientation.value === PortalOrientation.X) {
             to = {
-                x: location.x + this._dataSource.sizeX,
-                y: location.y + this._dataSource.sizeY,
+                x: location.x + this._sizeX.value,
+                y: location.y + this._sizeY.value,
                 z: location.z,
             };
-        } else if (this._dataSource?.orientation === PortalOrientation.Z) {
+        } else if (this._orientation.value === PortalOrientation.Z) {
             to = {
                 x: location.x,
-                y: location.y + this._dataSource.sizeY,
-                z: location.z + this._dataSource.sizeX,
+                y: location.y + this._sizeY.value,
+                z: location.z + this._sizeX.value,
             };
         } else {
             uiSession.log.error('Failed to get valid orientation');
@@ -352,24 +336,24 @@ class NetherPortal implements IPortalGenerator {
             return;
         }
 
-        const yEnd = this._dataSource.sizeY - 1;
-        const xEnd = this._dataSource.sizeX - 1;
+        const yEnd = this._sizeY.value - 1;
+        const xEnd = this._sizeX.value - 1;
         uiSession.extensionContext.transactionManager.trackBlockChangeArea(from, to);
-        for (let y = 0; y < this._dataSource.sizeY; ++y) {
-            for (let x = 0; x < this._dataSource.sizeX; ++x) {
+        for (let y = 0; y < this._sizeY.value; ++y) {
+            for (let x = 0; x < this._sizeX.value; ++x) {
                 let block = MinecraftBlockTypes.Air;
 
                 // Percent complete is randomized percentage
-                if (this._dataSource.percentComplete !== 100) {
+                if (this._percentComplete.value !== 100) {
                     const randVal = getRandomInt(100);
-                    if (this._dataSource.percentComplete - randVal < 0) {
+                    if (this._percentComplete.value - randVal < 0) {
                         continue;
                     }
                 }
 
                 // Set as obsidian for bottom, top, and edges of portal
                 if (
-                    !this._dataSource.corners &&
+                    !this._hasCorners.value &&
                     ((y === 0 && x === 0) ||
                         (y === 0 && x === xEnd) ||
                         (y === yEnd && x === xEnd) ||
@@ -383,7 +367,7 @@ class NetherPortal implements IPortalGenerator {
                 }
 
                 const loc: Vector3 =
-                    this._dataSource.orientation === PortalOrientation.X
+                    this._orientation.value === PortalOrientation.X
                         ? { x: location.x + x, y: location.y + y, z: location.z }
                         : { x: location.x, y: location.y + y, z: location.z + x };
 
@@ -392,24 +376,24 @@ class NetherPortal implements IPortalGenerator {
         }
 
         let ori = 'x';
-        if (this._dataSource.orientation === PortalOrientation.Z) {
+        if (this._orientation.value === PortalOrientation.Z) {
             ori = 'z';
             from = { x: location.x, y: location.y + 1, z: location.z + 1 };
             to = {
                 x: location.x,
-                y: location.y + this._dataSource.sizeY - 2,
-                z: location.z + this._dataSource.sizeX - 2,
+                y: location.y + this._sizeY.value - 2,
+                z: location.z + this._sizeX.value - 2,
             };
         } else {
             from = { x: location.x + 1, y: location.y + 1, z: location.z };
             to = {
-                x: location.x + this._dataSource.sizeX - 2,
-                y: location.y + this._dataSource.sizeY - 2,
+                x: location.x + this._sizeX.value - 2,
+                y: location.y + this._sizeY.value - 2,
                 z: location.z,
             };
         }
 
-        if (this._dataSource.percentComplete === 100) {
+        if (this._percentComplete.value === 100) {
             // We must fill the portals as it must have the axis set while setting the type
             // or the engine will destroy the block and the scripting API wont allow both in one operation
             me.dimension.runCommand(
@@ -424,10 +408,9 @@ class NetherPortal implements IPortalGenerator {
 class EndPortal implements IPortalGenerator {
     private _pane?: IPropertyPane;
     private _parentPane?: IPropertyPane;
-    private _settings: EndDataSourceType = {
-        filledEyeCount: 12,
-    };
-    private _dataSource?: EndDataSourceType;
+
+    // Settings
+    private _filledEyeCount: IObservable<number> = makeObservable(12);
 
     constructor() {}
 
@@ -453,16 +436,11 @@ class EndPortal implements IPortalGenerator {
     }
 
     deactivatePane(): void {
-        if (this._dataSource) {
-            this._settings = this._dataSource;
-        }
-
         if (this._pane) {
             this._pane.hide();
             this._parentPane?.removePropertyPane(this._pane);
         }
 
-        this._dataSource = undefined;
         this._pane = undefined;
     }
 
@@ -477,24 +455,18 @@ class EndPortal implements IPortalGenerator {
             title: 'sample.portalgenerator.pane.end.pane.title',
         });
 
-        this._dataSource = bindDataSource(subPane, this._settings);
-
-        subPane.addNumber(this._dataSource, 'filledEyeCount', {
+        subPane.addNumber(this._filledEyeCount, {
             title: 'sample.portalgenerator.pane.end.pane.filledcount',
             min: 0,
             max: 12,
-            showSlider: true,
+            variant: NumberPropertyItemVariant.InputFieldAndSlider,
+            isInteger: true,
         });
 
         return subPane;
     }
 
     generatePortal(uiSession: PortalGeneratorSession): void {
-        if (!this._dataSource) {
-            uiSession.log.error('No data source bound');
-            return;
-        }
-
         const me = uiSession.extensionContext.player;
         const location = uiSession.extensionContext.cursor.getPosition();
 
@@ -510,11 +482,11 @@ class EndPortal implements IPortalGenerator {
         const to: Vector3 = { x: location.x + 4, y: location.y, z: location.z + 4 };
 
         let eyesToUse: boolean[] = [false, false, false, false, false, false, false, false, false, false, false, false];
-        if (this._dataSource.filledEyeCount === 12) {
+        if (this._filledEyeCount.value === 12) {
             eyesToUse = [true, true, true, true, true, true, true, true, true, true, true, true];
-        } else if (this._dataSource.filledEyeCount !== 0) {
+        } else if (this._filledEyeCount.value !== 0) {
             const possibleEyeLocs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
-            for (let i = 0; i < this._dataSource.filledEyeCount; ++i) {
+            for (let i = 0; i < this._filledEyeCount.value; ++i) {
                 const rand = Math.floor(Math.random() * possibleEyeLocs.length);
                 eyesToUse[possibleEyeLocs[rand]] = true;
                 possibleEyeLocs.splice(rand, 1);
@@ -544,7 +516,7 @@ class EndPortal implements IPortalGenerator {
                     // north edge
                     blockType = MinecraftBlockTypes.EndPortalFrame;
                     rot = 2;
-                } else if (this._dataSource.filledEyeCount === 12 && x >= 1 && z >= 1 && x <= 3 && z <= 3) {
+                } else if (this._filledEyeCount.value === 12 && x >= 1 && z >= 1 && x <= 3 && z <= 3) {
                     // center
                     blockType = MinecraftBlockTypes.EndPortal;
                 } else {

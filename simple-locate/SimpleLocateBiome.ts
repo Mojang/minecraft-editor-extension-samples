@@ -4,13 +4,14 @@ import { VECTOR3_ZERO, Vector3Utils } from '@minecraft/math';
 import {
     ActionTypes,
     IDropdownItem,
+    IObservable,
     IPlayerUISession,
     ISimpleToolOptions,
     ISimpleToolPaneComponent,
     InputModifier,
     KeyboardKey,
     SimpleToolWrapper,
-    bindDataSource,
+    makeObservable,
     registerEditorExtension,
 } from '@minecraft/server-editor';
 import { BiomeTypes, Player, Vector3 } from '@minecraft/server';
@@ -21,11 +22,11 @@ enum LocateMode {
 }
 
 type LocateSelectorType = {
-    locateMode: LocateMode;
+    locateMode: IObservable<LocateMode>;
 };
 
 type LocateBiomeSourceType = {
-    biomeId: number;
+    biomeId: IObservable<number>;
     biomePos: Vector3;
 };
 
@@ -97,15 +98,15 @@ export class SimpleLocate extends SimpleToolWrapper {
         // changes made to the UI to be reflected here.
         // It creates a bi-directional networking link between the client and server.
         // We use this to ensure that the selected type is always up-to-date.
-        const locatorType: LocateSelectorType = bindDataSource(actualPane, {
-            locateMode: LocateMode.Biome,
-        });
+        const locatorType: LocateSelectorType = {
+            locateMode: makeObservable(LocateMode.Biome),
+        };
 
         // Create a dropdown with two options: Biome and Structure
         // and an event handler to show the appropriate sub-pane when the selection changes
-        actualPane.addDropdown(locatorType, 'locateMode', {
+        actualPane.addDropdown(locatorType.locateMode, {
             title: 'sample.simplelocate.tool.locatetype.title',
-            dropdownItems: [
+            entries: [
                 {
                     label: 'sample.simplelocate.tool.locatetype.biome',
                     value: LocateMode.Biome,
@@ -115,8 +116,8 @@ export class SimpleLocate extends SimpleToolWrapper {
                     value: LocateMode.Structure,
                 },
             ],
-            onChange: (_obj: object, _property: string, _oldValue: object, _newValue: object) => {
-                const mode = _newValue as unknown as LocateMode;
+            onChange: (newValue: number) => {
+                const mode = newValue as LocateMode;
                 if (mode === LocateMode.Biome) {
                     component.simpleTool.showPane('type-biome');
                 } else {
@@ -130,10 +131,10 @@ export class SimpleLocate extends SimpleToolWrapper {
     buildBiomeSearchPane(component: ISimpleToolPaneComponent): void {
         const actualPane = component.pane;
 
-        const biomeType: LocateBiomeSourceType = bindDataSource(actualPane, {
-            biomeId: 0,
+        const biomeType: LocateBiomeSourceType = {
+            biomeId: makeObservable(0),
             biomePos: VECTOR3_ZERO,
-        });
+        };
 
         const listOfBiomes = BiomeTypes.getAll().map((v, i) => {
             const names = v.id;
@@ -144,10 +145,10 @@ export class SimpleLocate extends SimpleToolWrapper {
             return item;
         });
 
-        actualPane.addDropdown(biomeType, 'biomeId', {
+        actualPane.addDropdown(biomeType.biomeId, {
             title: 'sample.simplelocate.tool.biome.title',
-            dropdownItems: listOfBiomes,
-            onChange: (_obj: object, _property: string, _oldValue: object, _newValue: object) => {
+            entries: listOfBiomes,
+            onChange: () => {
                 component.simpleTool.hidePane('results');
             },
         });
@@ -155,7 +156,7 @@ export class SimpleLocate extends SimpleToolWrapper {
         const locateBiomeAction = component.session.actionManager.createAction({
             actionType: ActionTypes.NoArgsAction,
             onExecute: () => {
-                const biome = BiomeTypes.getAll()[biomeType.biomeId].id;
+                const biome = BiomeTypes.getAll()[biomeType.biomeId.value].id;
                 const player: Player = component.session.extensionContext.player;
                 const biomePos = player.dimension.findClosestBiome(player.location, biome);
                 if (biomePos) {
@@ -175,17 +176,16 @@ export class SimpleLocate extends SimpleToolWrapper {
 
     buildStructurePane(component: ISimpleToolPaneComponent): void {
         const actualPane = component.pane;
-        actualPane.addText({ t: 'Structure searching is not currently supported' }, 't', {
+        actualPane.addText('sample.simplelocate.tool.structure.message', {
             border: true,
-            valueStringId: 'sample.simplelocate.tool.structure.message',
         });
     }
 
     buildResultsPane(component: ISimpleToolPaneComponent): void {
         const actualPane = component.pane;
-        actualPane.addText({ text: `Found ${this._results.foundType}` }, 'text');
+        actualPane.addText(`Found ${this._results.foundType}`);
 
-        actualPane.addVector3(this._results, 'foundPos', {
+        actualPane.addVector3_deprecated(this._results, 'foundPos', {
             title: 'sample.simplelocate.tool.results.foundat',
             enable: false,
             visible: true,
@@ -207,9 +207,8 @@ export class SimpleLocate extends SimpleToolWrapper {
 
     buildNoResultsPane(component: ISimpleToolPaneComponent): void {
         const actualPane = component.pane;
-        actualPane.addText({ t: 'No Results Found' }, 't', {
+        actualPane.addText('sample.simplelocate.tool.results.notfound', {
             border: true,
-            valueStringId: 'sample.simplelocate.tool.results.notfound',
         });
     }
 
