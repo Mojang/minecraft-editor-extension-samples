@@ -2,6 +2,7 @@
 
 import {
     EditorStatusBarAlignment,
+    IObservable,
     IPlayerUISession,
     ISimpleToolOptions,
     ISimpleToolPaneOptions,
@@ -12,13 +13,14 @@ import {
     SimpleToolStatusBarVisibility,
     SimpleToolWrapper,
     bindDataSource,
+    makeObservable,
     registerEditorExtension,
 } from '@minecraft/server-editor';
 
 // This is used in the sub pane which contains the dropdown control, and is used to store the current
 // selection for the visibility selector
 type SettingsType = {
-    selected: number;
+    selected: IObservable<number>;
 };
 
 export class SimpleEmptyTool extends SimpleToolWrapper {
@@ -27,7 +29,7 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
     // store instance data in the class itself.  This is so much easier than the old way, and should be a far
     // more familiar patter to most developers
     private _settings: SettingsType = {
-        selected: 0,
+        selected: makeObservable(0),
     };
 
     constructor(session: IPlayerUISession) {
@@ -75,14 +77,9 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
 
             onBeginFinalize: component => {
                 component.simpleTool.logDebug('onBeginFinalize(Pane main)');
-                component.pane.addText(
-                    { t: 'The main window pane (at the top) - should appear before any child panes' },
-                    't',
-                    {
-                        valueStringId: 'sample.simpleempty.tool.pane.top.text',
-                        border: false,
-                    }
-                );
+                component.pane.addText('sample.simpleempty.tool.pane.top.text', {
+                    border: false,
+                });
             },
 
             childPanes: [
@@ -95,21 +92,14 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
 
                         this._settings = bindDataSource(component.pane, this._settings);
 
-                        component.pane.addText(
-                            {
-                                t: 'A child pane of primary sub pane (a sub-sub-pane, if you will).  This should appear before any sub panes because its in the beginFinalize function',
-                            },
-                            't',
-                            {
-                                valueStringId: 'sample.simpleempty.tool.subpane1.text',
-                                border: false,
-                            }
-                        );
+                        component.pane.addText('sample.simpleempty.tool.subpane1.text', {
+                            border: false,
+                        });
 
                         // Add a dropdown to control the visibility of the child panes
-                        component.pane.addDropdown(this._settings, 'selected', {
+                        component.pane.addDropdown(this._settings.selected, {
                             title: 'sample.simpleempty.tool.comboitem.visible',
-                            dropdownItems: [
+                            entries: [
                                 {
                                     label: 'sample.simpleempty.tool.comboitem1',
                                     value: 0,
@@ -127,8 +117,8 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
                                     value: 3,
                                 },
                             ],
-                            onChange: (_obj: object, _property: string, _oldValue: object, _newValue: object) => {
-                                const selected = _newValue as unknown as number;
+                            onChange: (newValue: number) => {
+                                const selected = newValue;
                                 component.simpleTool.logInfo(`Setting to: [${selected}].`);
 
                                 const children = component.childPaneList;
@@ -166,8 +156,7 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
                             title: 'sample.simpleempty.tool.subpane1.subpane1.title',
                             onBeginFinalize: component => {
                                 component.simpleTool.logDebug('onBeginFinalize(Sub Sub Pane(1-1))');
-                                component.pane.addText({ t: 'The first child pane of sub pane (1)' }, 't', {
-                                    valueStringId: 'sample.simpleempty.tool.subpane1.subpane1.text',
+                                component.pane.addText('sample.simpleempty.tool.subpane1.subpane1.text', {
                                     border: false,
                                 });
                             },
@@ -177,8 +166,7 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
                             title: 'sample.simpleempty.tool.subpane1.subpane2.title',
                             onBeginFinalize: component => {
                                 component.simpleTool.logDebug('onBeginFinalize(Sub Sub Pane(1-2))');
-                                component.pane.addText({ t: 'A second child pane of sub pane (1)' }, 't', {
-                                    valueStringId: 'sample.simpleempty.tool.subpane1.subpane2.text',
+                                component.pane.addText('sample.simpleempty.tool.subpane1.subpane2.text', {
                                     border: false,
                                 });
                             },
@@ -187,7 +175,7 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
 
                     onEndFinalize: component => {
                         component.simpleTool.logDebug('onEndFinalize(Sub Pane(1))');
-                        component.pane.addText({ t: 'A sub pane (should be at the bottom after the sub-panes)' }, 't');
+                        component.pane.addText('A sub pane (should be at the bottom after the sub-panes)');
 
                         // Set initial visibility of the child panes
                         component.simpleTool.showPaneExclusively('1-1');
@@ -198,21 +186,16 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
                     title: 'Sub Pane(2)',
                     onEndFinalize: component => {
                         component.simpleTool.logDebug('onEndFinalize(Sub Pane(2))');
-                        component.pane.addText({ t: 'A sub pane' }, 't');
+                        component.pane.addText('A sub pane');
                     },
                 },
             ],
 
             onEndFinalize: component => {
                 component.simpleTool.logDebug('onEndFinalize(Pane main)');
-                component.pane.addText(
-                    { t: 'The main window pane (at the bottom) - should appear after all child panes' },
-                    't',
-                    {
-                        valueStringId: 'sample.simpleempty.tool.pane.bottom.text',
-                        border: false,
-                    }
-                );
+                component.pane.addText('sample.simpleempty.tool.pane.bottom.text', {
+                    border: false,
+                });
             },
             onTeardown: component => {
                 component.simpleTool.logDebug('onTeardown(Pane main)');
