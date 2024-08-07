@@ -5,6 +5,7 @@ import {
     ActionTypes,
     EditorInputContext,
     IModalTool,
+    IObservable,
     IPlayerUISession,
     InputModifier,
     KeyboardKey,
@@ -12,31 +13,31 @@ import {
     MouseInputType,
     MouseProps,
     Ray,
-    bindDataSource,
+    makeObservable,
     registerEditorExtension,
 } from '@minecraft/server-editor';
 import { Player, Vector3 } from '@minecraft/server';
 import { MinecraftBlockTypes, MinecraftEntityTypes } from '@minecraft/vanilla-data';
 
-type SettingsType = {
-    farmWidth: number;
-    farmLength: number;
-    fenceType: number;
-    irrigation: boolean;
+type CommonSettingsType = {
+    farmWidth: IObservable<number>;
+    farmLength: IObservable<number>;
+    irrigation: IObservable<boolean>;
+    fenceType: IObservable<number>;
 };
 
 type CropSettingsType = {
-    wheat: boolean;
-    pumpkin: boolean;
-    potato: boolean;
-    carrot: boolean;
-    beetroot: boolean;
+    wheat: IObservable<boolean>;
+    pumpkin: IObservable<boolean>;
+    potato: IObservable<boolean>;
+    carrot: IObservable<boolean>;
+    beetroot: IObservable<boolean>;
 };
 
 type AnimalSettingsType = {
-    pig: boolean;
-    sheep: boolean;
-    cow: boolean;
+    pig: IObservable<boolean>;
+    sheep: IObservable<boolean>;
+    cow: IObservable<boolean>;
 };
 
 function getRandomInt(upper: number) {
@@ -77,7 +78,7 @@ const buildFarm = (
     possibleAnimals: MinecraftEntityTypes[],
     possibleCrops: string[],
     player: Player,
-    settings: SettingsType
+    commonSettings: CommonSettingsType
 ) => {
     let didPlaceAnimal = false;
     for (let i = 0; i < width; i++) {
@@ -93,13 +94,13 @@ const buildFarm = (
             const block = player.dimension.getBlock(location);
             const blockAbove = player.dimension.getBlock(locationAbove);
             const isBorder = i === 0 || i === width - 1 || j === 0 || j === length - 1;
-            if (xOffset % 3 === 0 && !isBorder && settings.irrigation) {
+            if (xOffset % 3 === 0 && !isBorder && commonSettings.irrigation.value) {
                 block?.setType(MinecraftBlockTypes.Water);
             } else {
                 block?.setType(MinecraftBlockTypes.Farmland);
             }
             if (isBorder) {
-                blockAbove?.setType(fenceTypeToBlockType(settings.fenceType));
+                blockAbove?.setType(fenceTypeToBlockType(commonSettings.fenceType.value));
             } else if (possibleAnimals.length > 0 && getRandomInt(5) === 5) {
                 const animal = getRandomInt(possibleAnimals.length - 1);
                 const entityType = possibleAnimals[animal];
@@ -133,33 +134,33 @@ function addFarmGeneratorSettingsPane(uiSession: IPlayerUISession, tool: IModalT
     const windowPane = uiSession.createPropertyPane({
         title: 'sample.farmgenerator.pane.title',
     });
-    const cropPane = windowPane.createPropertyPane({
+    const cropPane = windowPane.createSubPane({
         title: 'sample.farmgenerator.pane.crops.title',
     });
-    const animalPane = windowPane.createPropertyPane({
+    const animalPane = windowPane.createSubPane({
         title: 'sample.farmgenerator.pane.animals.title',
     });
 
-    const settings: SettingsType = bindDataSource(windowPane, {
-        farmWidth: 10,
-        farmLength: 10,
-        fenceType: 0, // oak fence
-        irrigation: false,
-    });
+    const commonSettings: CommonSettingsType = {
+        farmWidth: makeObservable(10),
+        farmLength: makeObservable(10),
+        irrigation: makeObservable(false),
+        fenceType: makeObservable(0),
+    };
 
-    const cropSettings: CropSettingsType = bindDataSource(cropPane, {
-        wheat: false,
-        pumpkin: false,
-        potato: false,
-        carrot: false,
-        beetroot: false,
-    });
+    const cropSettings: CropSettingsType = {
+        wheat: makeObservable(false),
+        pumpkin: makeObservable(false),
+        potato: makeObservable(false),
+        carrot: makeObservable(false),
+        beetroot: makeObservable(false),
+    };
 
-    const animalSettings: AnimalSettingsType = bindDataSource(animalPane, {
-        pig: false,
-        sheep: false,
-        cow: false,
-    });
+    const animalSettings: AnimalSettingsType = {
+        pig: makeObservable(false),
+        sheep: makeObservable(false),
+        cow: makeObservable(false),
+    };
 
     const onExecuteGenerator = (ray?: Ray) => {
         const player: Player = uiSession.extensionContext.player;
@@ -178,74 +179,74 @@ function addFarmGeneratorSettingsPane(uiSession: IPlayerUISession, tool: IModalT
 
         let targetCorner: Vector3 = { x: targetBlock.location.x, y: targetBlock.location.y, z: targetBlock.location.z };
         const possibleCrops: string[] = [];
-        if (cropSettings.beetroot) {
+        if (cropSettings.beetroot.value) {
             possibleCrops.push(MinecraftBlockTypes.Beetroot);
         }
-        if (cropSettings.carrot) {
+        if (cropSettings.carrot.value) {
             possibleCrops.push(MinecraftBlockTypes.Carrots);
         }
-        if (cropSettings.pumpkin) {
+        if (cropSettings.pumpkin.value) {
             possibleCrops.push(MinecraftBlockTypes.Pumpkin);
         }
-        if (cropSettings.wheat) {
+        if (cropSettings.wheat.value) {
             possibleCrops.push(MinecraftBlockTypes.Wheat);
         }
-        if (cropSettings.potato) {
+        if (cropSettings.potato.value) {
             possibleCrops.push(MinecraftBlockTypes.Potatoes);
         }
         const possibleAnimals: MinecraftEntityTypes[] = [];
-        if (animalSettings.sheep) {
+        if (animalSettings.sheep.value) {
             possibleAnimals.push(MinecraftEntityTypes.Sheep);
         }
-        if (animalSettings.cow) {
+        if (animalSettings.cow.value) {
             possibleAnimals.push(MinecraftEntityTypes.Cow);
         }
-        if (animalSettings.pig) {
+        if (animalSettings.pig.value) {
             possibleAnimals.push(MinecraftEntityTypes.Pig);
         }
         let x = 1;
         let z = 1;
-        let length = settings.farmLength;
-        let width = settings.farmWidth;
+        let length = commonSettings.farmLength.value;
+        let width = commonSettings.farmWidth.value;
         if (Math.round(player.getViewDirection().z) === -1) {
             targetCorner = {
-                x: targetCorner.x + (settings.farmWidth / 2 - 1),
+                x: targetCorner.x + (commonSettings.farmWidth.value / 2 - 1),
                 y: targetCorner.y,
-                z: targetCorner.z - (settings.farmLength / 2 - 1),
+                z: targetCorner.z - (commonSettings.farmLength.value / 2 - 1),
             };
             uiSession.log.info('Facing north');
             x = -1;
         } else if (Math.round(player.getViewDirection().x) === 1) {
             targetCorner = {
-                x: targetCorner.x + (settings.farmWidth / 2 - 1),
+                x: targetCorner.x + (commonSettings.farmWidth.value / 2 - 1),
                 y: targetCorner.y,
-                z: targetCorner.z + (settings.farmLength / 2 - 1),
+                z: targetCorner.z + (commonSettings.farmLength.value / 2 - 1),
             };
             uiSession.log.info('Facing east');
-            length = settings.farmWidth;
-            width = settings.farmLength;
+            length = commonSettings.farmWidth.value;
+            width = commonSettings.farmLength.value;
             x = -1;
             z = -1;
         }
         if (Math.round(player.getViewDirection().z) === 1) {
             targetCorner = {
-                x: targetCorner.x - (settings.farmWidth / 2 - 1),
+                x: targetCorner.x - (commonSettings.farmWidth.value / 2 - 1),
                 y: targetCorner.y,
-                z: targetCorner.z + (settings.farmLength / 2 - 1),
+                z: targetCorner.z + (commonSettings.farmLength.value / 2 - 1),
             };
             uiSession.log.info('Facing south');
             z = -1;
         } else if (Math.round(player.getViewDirection().x) === -1) {
             targetCorner = {
-                x: targetCorner.x - (settings.farmWidth / 2 - 1),
+                x: targetCorner.x - (commonSettings.farmWidth.value / 2 - 1),
                 y: targetCorner.y,
-                z: targetCorner.z - (settings.farmLength / 2 - 1),
+                z: targetCorner.z - (commonSettings.farmLength.value / 2 - 1),
             };
             uiSession.log.info('Facing west');
-            length = settings.farmWidth;
-            width = settings.farmLength;
+            length = commonSettings.farmWidth.value;
+            width = commonSettings.farmLength.value;
         }
-        buildFarm(targetCorner, x, z, length, width, possibleAnimals, possibleCrops, player, settings);
+        buildFarm(targetCorner, x, z, length, width, possibleAnimals, possibleCrops, player, commonSettings);
     };
 
     // Create an action that will be executed on left mouse click
@@ -280,22 +281,23 @@ function addFarmGeneratorSettingsPane(uiSession: IPlayerUISession, tool: IModalT
     );
 
     tool.registerMouseButtonBinding(executeMouseAction);
-    windowPane.addNumber(settings, 'farmLength', {
+
+    windowPane.addNumber(commonSettings.farmLength, {
         title: 'sample.farmgenerator.pane.length',
         min: 2,
         max: 20,
-        showSlider: false,
+        isInteger: true,
     });
-    windowPane.addNumber(settings, 'farmWidth', {
+    windowPane.addNumber(commonSettings.farmWidth, {
         title: 'sample.farmgenerator.pane.width',
         min: 2,
         max: 20,
-        showSlider: false,
+        isInteger: true,
     });
-    windowPane.addDropdown(settings, 'fenceType', {
+    windowPane.addDropdown(commonSettings.fenceType, {
         title: 'sample.farmgenerator.pane.fence',
         enable: true,
-        dropdownItems: [
+        entries: [
             {
                 label: 'Oak',
                 value: 0,
@@ -335,37 +337,36 @@ function addFarmGeneratorSettingsPane(uiSession: IPlayerUISession, tool: IModalT
         ],
     });
 
-    windowPane.addBool(settings, 'irrigation', {
+    windowPane.addBool(commonSettings.irrigation, {
         title: 'sample.farmgenerator.pane.irrigation',
+        tooltip: 'sample.farmgenerator.pane.irrigation.tooltip',
     });
-    cropPane.addBool(cropSettings, 'wheat', {
+    cropPane.addBool(cropSettings.wheat, {
         title: 'sample.farmgenerator.pane.crops.wheat',
     });
-    cropPane.addBool(cropSettings, 'potato', {
+    cropPane.addBool(cropSettings.potato, {
         title: 'sample.farmgenerator.pane.crops.potato',
     });
-    cropPane.addBool(cropSettings, 'beetroot', {
+    cropPane.addBool(cropSettings.beetroot, {
         title: 'sample.farmgenerator.pane.crops.beets',
     });
-    cropPane.addBool(cropSettings, 'pumpkin', {
+    cropPane.addBool(cropSettings.pumpkin, {
         title: 'sample.farmgenerator.pane.crops.pumpkin',
     });
-    cropPane.addBool(cropSettings, 'carrot', {
+    cropPane.addBool(cropSettings.carrot, {
         title: 'sample.farmgenerator.pane.crops.carrot',
     });
-    animalPane.addBool(animalSettings, 'cow', {
+    animalPane.addBool(animalSettings.cow, {
         title: 'sample.farmgenerator.pane.animals.cow',
     });
-    animalPane.addBool(animalSettings, 'sheep', {
+    animalPane.addBool(animalSettings.sheep, {
         title: 'sample.farmgenerator.pane.animals.sheep',
     });
-    animalPane.addBool(animalSettings, 'pig', {
+    animalPane.addBool(animalSettings.pig, {
         title: 'sample.farmgenerator.pane.animals.pig',
     });
 
     tool.bindPropertyPane(windowPane);
-
-    return settings;
 }
 
 /**
