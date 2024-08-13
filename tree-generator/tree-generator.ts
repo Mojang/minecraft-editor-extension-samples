@@ -3,27 +3,26 @@
 import {
     ActionTypes,
     EditorInputContext,
-    IDropdownPropertyItemEntry,
+    IDropdownItem,
     IModalTool,
-    IObservable,
     IPlayerUISession,
     InputModifier,
     KeyboardKey,
+    ModalToolLifecycleEventPayload,
     MouseActionType,
     MouseInputType,
     MouseProps,
-    NumberPropertyItemVariant,
     Ray,
-    makeObservable,
+    bindDataSource,
     registerEditorExtension,
 } from '@minecraft/server-editor';
 import { BlockPermutation, Vector3 } from '@minecraft/server';
 import { MinecraftBlockTypes } from '@minecraft/vanilla-data';
 
 interface TreeToolSettings {
-    height: IObservable<number>;
-    randomHeightVariance: IObservable<number>;
-    treeType: IObservable<number>;
+    height: number;
+    randomHeightVariance: number;
+    treeType: number;
 }
 
 interface TreeBlockChangeData {
@@ -48,8 +47,8 @@ export class SimpleTree implements ITree {
         const result: TreeBlockChangeData[] = [];
 
         const heightOffset =
-            Math.floor(Math.random() * settings.randomHeightVariance.value) - settings.randomHeightVariance.value / 2;
-        const calculatedHeight = settings.height.value + heightOffset;
+            Math.floor(Math.random() * settings.randomHeightVariance) - settings.randomHeightVariance / 2;
+        const calculatedHeight = settings.height + heightOffset;
 
         ///
         // Trunk
@@ -266,12 +265,21 @@ function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
         title: 'sample.treegenerator.pane.title',
     });
 
-    // Settings
-    const settings: TreeToolSettings = {
-        height: makeObservable(5),
-        randomHeightVariance: makeObservable(0),
-        treeType: makeObservable(0),
-    };
+    // Set up an activation handler to show/hide the pane when the tool is activated/deactivated
+    tool.onModalToolActivation.subscribe((eventData: ModalToolLifecycleEventPayload) => {
+        if (eventData.isActiveTool) {
+            pane.show();
+        } else {
+            pane.hide();
+        }
+    });
+
+    // Create a data object for pane controls
+    const settings = bindDataSource(pane, {
+        height: 5,
+        treeType: 0,
+        randomHeightVariance: 0,
+    });
 
     const onExecuteTool = (ray?: Ray) => {
         const player = uiSession.extensionContext.player;
@@ -298,7 +306,7 @@ function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
         // Begin transaction
         uiSession.extensionContext.transactionManager.openTransaction('Tree Tool');
 
-        const selectedTreeType = TreeTypes[settings.treeType.value];
+        const selectedTreeType = TreeTypes[settings.treeType];
         const affectedBlocks = selectedTreeType.type.place(location, settings);
 
         // Track changes
@@ -324,31 +332,30 @@ function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
     };
 
     // Add a dropdown for available tree types
-    pane.addDropdown(settings.treeType, {
+    pane.addDropdown(settings, 'treeType', {
         title: 'sample.treegenerator.pane.type',
         enable: true,
-        entries: TreeTypes.map((tree, index): IDropdownPropertyItemEntry => {
-            return {
+        dropdownItems: TreeTypes.reduce<IDropdownItem[]>((list, tree, index) => {
+            list.push({
                 label: tree.name,
                 value: index,
-            };
+            });
+            return list;
         }, []),
     });
 
-    pane.addNumber(settings.height, {
+    pane.addNumber(settings, 'height', {
         title: 'sample.treegenerator.pane.height',
         min: 1,
         max: 16,
-        variant: NumberPropertyItemVariant.InputFieldAndSlider,
-        isInteger: true,
+        showSlider: true,
     });
 
-    pane.addNumber(settings.randomHeightVariance, {
+    pane.addNumber(settings, 'randomHeightVariance', {
         title: 'sample.treegenerator.pane.variance',
         min: 0,
         max: 5,
-        variant: NumberPropertyItemVariant.InputFieldAndSlider,
-        isInteger: true,
+        showSlider: true,
     });
 
     // Create and an action that will be executed on key press

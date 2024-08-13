@@ -13,17 +13,21 @@ import {
     MouseInputType,
     MouseProps,
     Ray,
+    bindDataSource,
     makeObservable,
     registerEditorExtension,
 } from '@minecraft/server-editor';
 import { Player, Vector3 } from '@minecraft/server';
 import { MinecraftBlockTypes, MinecraftEntityTypes } from '@minecraft/vanilla-data';
 
+type SettingsType = {
+    farmWidth: number;
+    farmLength: number;
+    fenceType: number;
+};
+
 type CommonSettingsType = {
-    farmWidth: IObservable<number>;
-    farmLength: IObservable<number>;
     irrigation: IObservable<boolean>;
-    fenceType: IObservable<number>;
 };
 
 type CropSettingsType = {
@@ -78,6 +82,7 @@ const buildFarm = (
     possibleAnimals: MinecraftEntityTypes[],
     possibleCrops: string[],
     player: Player,
+    settings: SettingsType,
     commonSettings: CommonSettingsType
 ) => {
     let didPlaceAnimal = false;
@@ -100,7 +105,7 @@ const buildFarm = (
                 block?.setType(MinecraftBlockTypes.Farmland);
             }
             if (isBorder) {
-                blockAbove?.setType(fenceTypeToBlockType(commonSettings.fenceType.value));
+                blockAbove?.setType(fenceTypeToBlockType(settings.fenceType));
             } else if (possibleAnimals.length > 0 && getRandomInt(5) === 5) {
                 const animal = getRandomInt(possibleAnimals.length - 1);
                 const entityType = possibleAnimals[animal];
@@ -134,18 +139,21 @@ function addFarmGeneratorSettingsPane(uiSession: IPlayerUISession, tool: IModalT
     const windowPane = uiSession.createPropertyPane({
         title: 'sample.farmgenerator.pane.title',
     });
-    const cropPane = windowPane.createSubPane({
+    const cropPane = windowPane.createPropertyPane({
         title: 'sample.farmgenerator.pane.crops.title',
     });
-    const animalPane = windowPane.createSubPane({
+    const animalPane = windowPane.createPropertyPane({
         title: 'sample.farmgenerator.pane.animals.title',
     });
 
+    const settings: SettingsType = bindDataSource(windowPane, {
+        farmWidth: 10,
+        farmLength: 10,
+        fenceType: 0, // oak fence
+    });
+
     const commonSettings: CommonSettingsType = {
-        farmWidth: makeObservable(10),
-        farmLength: makeObservable(10),
         irrigation: makeObservable(false),
-        fenceType: makeObservable(0),
     };
 
     const cropSettings: CropSettingsType = {
@@ -206,47 +214,47 @@ function addFarmGeneratorSettingsPane(uiSession: IPlayerUISession, tool: IModalT
         }
         let x = 1;
         let z = 1;
-        let length = commonSettings.farmLength.value;
-        let width = commonSettings.farmWidth.value;
+        let length = settings.farmLength;
+        let width = settings.farmWidth;
         if (Math.round(player.getViewDirection().z) === -1) {
             targetCorner = {
-                x: targetCorner.x + (commonSettings.farmWidth.value / 2 - 1),
+                x: targetCorner.x + (settings.farmWidth / 2 - 1),
                 y: targetCorner.y,
-                z: targetCorner.z - (commonSettings.farmLength.value / 2 - 1),
+                z: targetCorner.z - (settings.farmLength / 2 - 1),
             };
             uiSession.log.info('Facing north');
             x = -1;
         } else if (Math.round(player.getViewDirection().x) === 1) {
             targetCorner = {
-                x: targetCorner.x + (commonSettings.farmWidth.value / 2 - 1),
+                x: targetCorner.x + (settings.farmWidth / 2 - 1),
                 y: targetCorner.y,
-                z: targetCorner.z + (commonSettings.farmLength.value / 2 - 1),
+                z: targetCorner.z + (settings.farmLength / 2 - 1),
             };
             uiSession.log.info('Facing east');
-            length = commonSettings.farmWidth.value;
-            width = commonSettings.farmLength.value;
+            length = settings.farmWidth;
+            width = settings.farmLength;
             x = -1;
             z = -1;
         }
         if (Math.round(player.getViewDirection().z) === 1) {
             targetCorner = {
-                x: targetCorner.x - (commonSettings.farmWidth.value / 2 - 1),
+                x: targetCorner.x - (settings.farmWidth / 2 - 1),
                 y: targetCorner.y,
-                z: targetCorner.z + (commonSettings.farmLength.value / 2 - 1),
+                z: targetCorner.z + (settings.farmLength / 2 - 1),
             };
             uiSession.log.info('Facing south');
             z = -1;
         } else if (Math.round(player.getViewDirection().x) === -1) {
             targetCorner = {
-                x: targetCorner.x - (commonSettings.farmWidth.value / 2 - 1),
+                x: targetCorner.x - (settings.farmWidth / 2 - 1),
                 y: targetCorner.y,
-                z: targetCorner.z - (commonSettings.farmLength.value / 2 - 1),
+                z: targetCorner.z - (settings.farmLength / 2 - 1),
             };
             uiSession.log.info('Facing west');
-            length = commonSettings.farmWidth.value;
-            width = commonSettings.farmLength.value;
+            length = settings.farmWidth;
+            width = settings.farmLength;
         }
-        buildFarm(targetCorner, x, z, length, width, possibleAnimals, possibleCrops, player, commonSettings);
+        buildFarm(targetCorner, x, z, length, width, possibleAnimals, possibleCrops, player, settings, commonSettings);
     };
 
     // Create an action that will be executed on left mouse click
@@ -281,23 +289,22 @@ function addFarmGeneratorSettingsPane(uiSession: IPlayerUISession, tool: IModalT
     );
 
     tool.registerMouseButtonBinding(executeMouseAction);
-
-    windowPane.addNumber(commonSettings.farmLength, {
+    windowPane.addNumber(settings, 'farmLength', {
         title: 'sample.farmgenerator.pane.length',
         min: 2,
         max: 20,
-        isInteger: true,
+        showSlider: false,
     });
-    windowPane.addNumber(commonSettings.farmWidth, {
+    windowPane.addNumber(settings, 'farmWidth', {
         title: 'sample.farmgenerator.pane.width',
         min: 2,
         max: 20,
-        isInteger: true,
+        showSlider: false,
     });
-    windowPane.addDropdown(commonSettings.fenceType, {
+    windowPane.addDropdown(settings, 'fenceType', {
         title: 'sample.farmgenerator.pane.fence',
         enable: true,
-        entries: [
+        dropdownItems: [
             {
                 label: 'Oak',
                 value: 0,
@@ -367,6 +374,8 @@ function addFarmGeneratorSettingsPane(uiSession: IPlayerUISession, tool: IModalT
     });
 
     tool.bindPropertyPane(windowPane);
+
+    return settings;
 }
 
 /**
