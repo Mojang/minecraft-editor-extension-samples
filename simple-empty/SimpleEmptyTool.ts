@@ -2,7 +2,6 @@
 
 import {
     EditorStatusBarAlignment,
-    IObservable,
     IPlayerUISession,
     ISimpleToolOptions,
     ISimpleToolPaneOptions,
@@ -13,14 +12,13 @@ import {
     SimpleToolStatusBarVisibility,
     SimpleToolWrapper,
     bindDataSource,
-    makeObservable,
     registerEditorExtension,
 } from '@minecraft/server-editor';
 
 // This is used in the sub pane which contains the dropdown control, and is used to store the current
 // selection for the visibility selector
 type SettingsType = {
-    selected: IObservable<number>;
+    selected: number;
 };
 
 export class SimpleEmptyTool extends SimpleToolWrapper {
@@ -29,7 +27,7 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
     // store instance data in the class itself.  This is so much easier than the old way, and should be a far
     // more familiar patter to most developers
     private _settings: SettingsType = {
-        selected: makeObservable(0),
+        selected: 0,
     };
 
     constructor(session: IPlayerUISession) {
@@ -97,9 +95,9 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
                         });
 
                         // Add a dropdown to control the visibility of the child panes
-                        component.pane.addDropdown(this._settings.selected, {
+                        component.pane.addDropdown(this._settings, 'selected', {
                             title: 'sample.simpleempty.tool.comboitem.visible',
-                            entries: [
+                            dropdownItems: [
                                 {
                                     label: 'sample.simpleempty.tool.comboitem1',
                                     value: 0,
@@ -117,8 +115,8 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
                                     value: 3,
                                 },
                             ],
-                            onChange: (newValue: number) => {
-                                const selected = newValue;
+                            onChange: (_obj: object, _property: string, _oldValue: object, _newValue: object) => {
+                                const selected = _newValue as unknown as number;
                                 component.simpleTool.logInfo(`Setting to: [${selected}].`);
 
                                 const children = component.childPaneList;
