@@ -4,14 +4,13 @@ import { VECTOR3_ZERO, Vector3Utils } from '@minecraft/math';
 import {
     ActionTypes,
     IDropdownItem,
-    IObservable,
     IPlayerUISession,
     ISimpleToolOptions,
     ISimpleToolPaneComponent,
     InputModifier,
     KeyboardKey,
     SimpleToolWrapper,
-    makeObservable,
+    bindDataSource,
     registerEditorExtension,
 } from '@minecraft/server-editor';
 import { BiomeTypes, Player, Vector3 } from '@minecraft/server';
@@ -22,11 +21,11 @@ enum LocateMode {
 }
 
 type LocateSelectorType = {
-    locateMode: IObservable<LocateMode>;
+    locateMode: LocateMode;
 };
 
 type LocateBiomeSourceType = {
-    biomeId: IObservable<number>;
+    biomeId: number;
     biomePos: Vector3;
 };
 
@@ -98,15 +97,15 @@ export class SimpleLocate extends SimpleToolWrapper {
         // changes made to the UI to be reflected here.
         // It creates a bi-directional networking link between the client and server.
         // We use this to ensure that the selected type is always up-to-date.
-        const locatorType: LocateSelectorType = {
-            locateMode: makeObservable(LocateMode.Biome),
-        };
+        const locatorType: LocateSelectorType = bindDataSource(actualPane, {
+            locateMode: LocateMode.Biome,
+        });
 
         // Create a dropdown with two options: Biome and Structure
         // and an event handler to show the appropriate sub-pane when the selection changes
-        actualPane.addDropdown(locatorType.locateMode, {
+        actualPane.addDropdown(locatorType, 'locateMode', {
             title: 'sample.simplelocate.tool.locatetype.title',
-            entries: [
+            dropdownItems: [
                 {
                     label: 'sample.simplelocate.tool.locatetype.biome',
                     value: LocateMode.Biome,
@@ -116,8 +115,8 @@ export class SimpleLocate extends SimpleToolWrapper {
                     value: LocateMode.Structure,
                 },
             ],
-            onChange: (newValue: number) => {
-                const mode = newValue as LocateMode;
+            onChange: (_obj: object, _property: string, _oldValue: object, _newValue: object) => {
+                const mode = _newValue as unknown as LocateMode;
                 if (mode === LocateMode.Biome) {
                     component.simpleTool.showPane('type-biome');
                 } else {
@@ -131,10 +130,10 @@ export class SimpleLocate extends SimpleToolWrapper {
     buildBiomeSearchPane(component: ISimpleToolPaneComponent): void {
         const actualPane = component.pane;
 
-        const biomeType: LocateBiomeSourceType = {
-            biomeId: makeObservable(0),
+        const biomeType: LocateBiomeSourceType = bindDataSource(actualPane, {
+            biomeId: 0,
             biomePos: VECTOR3_ZERO,
-        };
+        });
 
         const listOfBiomes = BiomeTypes.getAll().map((v, i) => {
             const names = v.id;
@@ -145,10 +144,10 @@ export class SimpleLocate extends SimpleToolWrapper {
             return item;
         });
 
-        actualPane.addDropdown(biomeType.biomeId, {
+        actualPane.addDropdown(biomeType, 'biomeId', {
             title: 'sample.simplelocate.tool.biome.title',
-            entries: listOfBiomes,
-            onChange: () => {
+            dropdownItems: listOfBiomes,
+            onChange: (_obj: object, _property: string, _oldValue: object, _newValue: object) => {
                 component.simpleTool.hidePane('results');
             },
         });
@@ -156,7 +155,7 @@ export class SimpleLocate extends SimpleToolWrapper {
         const locateBiomeAction = component.session.actionManager.createAction({
             actionType: ActionTypes.NoArgsAction,
             onExecute: () => {
-                const biome = BiomeTypes.getAll()[biomeType.biomeId.value].id;
+                const biome = BiomeTypes.getAll()[biomeType.biomeId].id;
                 const player: Player = component.session.extensionContext.player;
                 const biomePos = player.dimension.findClosestBiome(player.location, biome);
                 if (biomePos) {
