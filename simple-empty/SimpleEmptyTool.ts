@@ -1,7 +1,6 @@
 // Copyright (c) Mojang AB.  All rights reserved.
 
 import {
-    EditorStatusBarAlignment,
     IObservable,
     IPlayerUISession,
     ISimpleToolOptions,
@@ -12,6 +11,7 @@ import {
     KeyboardKey,
     SimpleToolStatusBarVisibility,
     SimpleToolWrapper,
+    StatusBarAlignment,
     bindDataSource,
     makeObservable,
     registerEditorExtension,
@@ -213,8 +213,8 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
         // only works if there's a ISimpleToolPropertyPane component added to the tool, otherwise it will be ignored and the
         // status bar will always be visible.
         const statusBarOptions: ISimpleToolStatusBarOptions = {
-            alignment: EditorStatusBarAlignment.Left,
-            displayAltText: 'Simple Empty Status',
+            alignment: StatusBarAlignment.Left,
+            text: 'Simple Empty Status',
             size: 50,
             visibility: SimpleToolStatusBarVisibility.VisibleWhenActive,
             onFinalize: statusBar => {
