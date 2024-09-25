@@ -87,7 +87,7 @@ class PortalGenerator implements IDisposable {
         const toolToggleAction = uiSession.actionManager.createAction({
             actionType: ActionTypes.NoArgsAction,
             onExecute: () => {
-                uiSession.toolRail.setSelectedOptionId(tool.id, true);
+                uiSession.toolRail.setSelectedToolId(tool.id);
             },
         });
 
