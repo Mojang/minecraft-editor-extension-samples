@@ -220,43 +220,49 @@ export class SimpleTree implements ITree {
     }
 }
 
-function createLeaf1Block(leafType: string): BlockPermutation {
-    return BlockPermutation.resolve(MinecraftBlockTypes.Leaves, {
-        old_leaf_type: leafType,
-    });
-}
-
-function createLeaf2Block(leafType: string): BlockPermutation {
-    return BlockPermutation.resolve(MinecraftBlockTypes.Leaves2, {
-        new_leaf_type: leafType,
-    });
-}
-
 const TreeTypes = [
     {
         name: 'Oak',
-        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.OakLog), createLeaf1Block('oak')),
+        type: new SimpleTree(
+            BlockPermutation.resolve(MinecraftBlockTypes.OakLog),
+            BlockPermutation.resolve(MinecraftBlockTypes.OakLeaves)
+        ),
     },
     {
         name: 'Spruce',
-        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.SpruceLog), createLeaf1Block('spruce')),
+        type: new SimpleTree(
+            BlockPermutation.resolve(MinecraftBlockTypes.SpruceLog),
+            BlockPermutation.resolve(MinecraftBlockTypes.SpruceLeaves)
+        ),
     },
     {
         name: 'Birch',
-        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.BirchLog), createLeaf1Block('birch')),
+        type: new SimpleTree(
+            BlockPermutation.resolve(MinecraftBlockTypes.BirchLog),
+            BlockPermutation.resolve(MinecraftBlockTypes.BirchLeaves)
+        ),
     },
     {
         name: 'Jungle',
-        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.JungleLog), createLeaf1Block('jungle')),
+        type: new SimpleTree(
+            BlockPermutation.resolve(MinecraftBlockTypes.JungleLog),
+            BlockPermutation.resolve(MinecraftBlockTypes.JungleLeaves)
+        ),
     },
 
     {
         name: 'Acacia',
-        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.AcaciaLog), createLeaf2Block('acacia')),
+        type: new SimpleTree(
+            BlockPermutation.resolve(MinecraftBlockTypes.AcaciaLog),
+            BlockPermutation.resolve(MinecraftBlockTypes.AcaciaLeaves)
+        ),
     },
     {
         name: 'Dark Oak',
-        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.DarkOakLog), createLeaf2Block('dark_oak')),
+        type: new SimpleTree(
+            BlockPermutation.resolve(MinecraftBlockTypes.DarkOakLog),
+            BlockPermutation.resolve(MinecraftBlockTypes.DarkOakLeaves)
+        ),
     },
 ];
 
@@ -392,7 +398,7 @@ function addTool(uiSession: IPlayerUISession) {
     const toolToggleAction = uiSession.actionManager.createAction({
         actionType: ActionTypes.NoArgsAction,
         onExecute: () => {
-            uiSession.toolRail.setSelectedOptionId(tool.id, true);
+            uiSession.toolRail.setSelectedToolId(tool.id);
         },
     });
 
