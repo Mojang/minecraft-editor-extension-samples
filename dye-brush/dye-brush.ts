@@ -3,6 +3,7 @@
 import {
     ActionTypes,
     ColorPickerPropertyItemVariant,
+    CursorProperties,
     CursorTargetMode,
     IDropdownItem,
     IModalTool,
@@ -138,6 +139,7 @@ interface DyeBrushStorage {
     currentColor: EntityColor;
     brushColor: IObservable<RGBA>;
     brushSize: number;
+    backedUpCursorProps: CursorProperties | undefined;
 }
 
 type DyeBrushSession = IPlayerUISession<DyeBrushStorage>;
@@ -162,11 +164,10 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
 
     const pane = uiSession.createPropertyPane({
         title: 'sample.dyeBrush.pane.title',
+        infoTooltip: { description: ['sample.dyebrush.tool.tooltip'] },
     });
 
     const entityBrush = makeObservable(EntityColor.White);
-
-    onColorUpdated(brushColor.value, uiSession);
 
     pane.addDropdown(entityBrush, {
         title: 'Brush',
@@ -312,7 +313,15 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
 
     tool.onModalToolActivation.subscribe((evt: ModalToolLifecycleEventPayload) => {
         if (evt.isActiveTool) {
+            if (uiSession.scratchStorage && !uiSession.scratchStorage.backedUpCursorProps) {
+                uiSession.scratchStorage.backedUpCursorProps = uiSession.extensionContext.cursor.getProperties();
+            }
             onColorUpdated(brushColor.value, uiSession);
+        } else {
+            if (uiSession.scratchStorage && uiSession.scratchStorage.backedUpCursorProps) {
+                uiSession.extensionContext.cursor.setProperties(uiSession.scratchStorage.backedUpCursorProps);
+                uiSession.scratchStorage.backedUpCursorProps = undefined;
+            }
         }
         uiSession.scratchStorage?.previewSelection?.clear();
     });
@@ -345,6 +354,7 @@ export function registerDyeBrushExtension() {
                 currentColor: EntityColor.White,
                 brushColor: makeObservable<RGBA>({ red: 1, green: 1, blue: 1, alpha: 0.5 }),
                 brushSize: 4,
+                backedUpCursorProps: undefined,
             };
             uiSession.scratchStorage = storage;
 
