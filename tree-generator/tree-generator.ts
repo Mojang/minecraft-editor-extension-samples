@@ -220,49 +220,43 @@ export class SimpleTree implements ITree {
     }
 }
 
+function createLeaf1Block(leafType: string): BlockPermutation {
+    return BlockPermutation.resolve(MinecraftBlockTypes.Leaves, {
+        old_leaf_type: leafType,
+    });
+}
+
+function createLeaf2Block(leafType: string): BlockPermutation {
+    return BlockPermutation.resolve(MinecraftBlockTypes.Leaves2, {
+        new_leaf_type: leafType,
+    });
+}
+
 const TreeTypes = [
     {
         name: 'Oak',
-        type: new SimpleTree(
-            BlockPermutation.resolve(MinecraftBlockTypes.OakLog),
-            BlockPermutation.resolve(MinecraftBlockTypes.OakLeaves)
-        ),
+        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.OakLog), createLeaf1Block('oak')),
     },
     {
         name: 'Spruce',
-        type: new SimpleTree(
-            BlockPermutation.resolve(MinecraftBlockTypes.SpruceLog),
-            BlockPermutation.resolve(MinecraftBlockTypes.SpruceLeaves)
-        ),
+        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.SpruceLog), createLeaf1Block('spruce')),
     },
     {
         name: 'Birch',
-        type: new SimpleTree(
-            BlockPermutation.resolve(MinecraftBlockTypes.BirchLog),
-            BlockPermutation.resolve(MinecraftBlockTypes.BirchLeaves)
-        ),
+        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.BirchLog), createLeaf1Block('birch')),
     },
     {
         name: 'Jungle',
-        type: new SimpleTree(
-            BlockPermutation.resolve(MinecraftBlockTypes.JungleLog),
-            BlockPermutation.resolve(MinecraftBlockTypes.JungleLeaves)
-        ),
+        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.JungleLog), createLeaf1Block('jungle')),
     },
 
     {
         name: 'Acacia',
-        type: new SimpleTree(
-            BlockPermutation.resolve(MinecraftBlockTypes.AcaciaLog),
-            BlockPermutation.resolve(MinecraftBlockTypes.AcaciaLeaves)
-        ),
+        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.AcaciaLog), createLeaf2Block('acacia')),
     },
     {
         name: 'Dark Oak',
-        type: new SimpleTree(
-            BlockPermutation.resolve(MinecraftBlockTypes.DarkOakLog),
-            BlockPermutation.resolve(MinecraftBlockTypes.DarkOakLeaves)
-        ),
+        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.DarkOakLog), createLeaf2Block('dark_oak')),
     },
 ];
 
