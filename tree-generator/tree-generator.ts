@@ -270,6 +270,12 @@ function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
     // Create a pane that will be shown when the tool is selected
     const pane = uiSession.createPropertyPane({
         title: 'sample.treegenerator.pane.title',
+        infoTooltip: {
+            description: [
+                'sample.treegenerator.tool.tooltip',
+                { link: 'https://aka.ms/BedrockEditorTreeGenerator', text: 'resourcePack.editor.help.learnMore' },
+            ],
+        },
     });
 
     // Settings
@@ -402,16 +408,12 @@ function addTool(uiSession: IPlayerUISession) {
         },
     });
 
-    const tool = uiSession.toolRail.addTool(
-        {
-            title: 'sample.treegenerator.tool.title',
-            icon: 'pack://textures/tree-generator.png',
-            tooltip: 'sample.treegenerator.tool.tooltip',
-            inputContextId: 'editorSamples:treeGenerator',
-            inputContextLabel: 'sample.treegenerator.tool.title',
-        },
-        toolToggleAction
-    );
+    const tool = uiSession.toolRail.addTool('editorSample:treeGeneratorTool', {
+        title: 'sample.treegenerator.tool.title',
+        icon: 'pack://textures/tree-generator.png',
+        tooltip: 'sample.treegenerator.tool.tooltip',
+        action: toolToggleAction,
+    });
 
     // Register a global shortcut to select the tool
     uiSession.inputManager.registerKeyBinding(
