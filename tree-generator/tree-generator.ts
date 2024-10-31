@@ -220,49 +220,43 @@ export class SimpleTree implements ITree {
     }
 }
 
+function createLeaf1Block(leafType: string): BlockPermutation {
+    return BlockPermutation.resolve(MinecraftBlockTypes.Leaves, {
+        old_leaf_type: leafType,
+    });
+}
+
+function createLeaf2Block(leafType: string): BlockPermutation {
+    return BlockPermutation.resolve(MinecraftBlockTypes.Leaves2, {
+        new_leaf_type: leafType,
+    });
+}
+
 const TreeTypes = [
     {
         name: 'Oak',
-        type: new SimpleTree(
-            BlockPermutation.resolve(MinecraftBlockTypes.OakLog),
-            BlockPermutation.resolve(MinecraftBlockTypes.OakLeaves)
-        ),
+        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.OakLog), createLeaf1Block('oak')),
     },
     {
         name: 'Spruce',
-        type: new SimpleTree(
-            BlockPermutation.resolve(MinecraftBlockTypes.SpruceLog),
-            BlockPermutation.resolve(MinecraftBlockTypes.SpruceLeaves)
-        ),
+        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.SpruceLog), createLeaf1Block('spruce')),
     },
     {
         name: 'Birch',
-        type: new SimpleTree(
-            BlockPermutation.resolve(MinecraftBlockTypes.BirchLog),
-            BlockPermutation.resolve(MinecraftBlockTypes.BirchLeaves)
-        ),
+        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.BirchLog), createLeaf1Block('birch')),
     },
     {
         name: 'Jungle',
-        type: new SimpleTree(
-            BlockPermutation.resolve(MinecraftBlockTypes.JungleLog),
-            BlockPermutation.resolve(MinecraftBlockTypes.JungleLeaves)
-        ),
+        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.JungleLog), createLeaf1Block('jungle')),
     },
 
     {
         name: 'Acacia',
-        type: new SimpleTree(
-            BlockPermutation.resolve(MinecraftBlockTypes.AcaciaLog),
-            BlockPermutation.resolve(MinecraftBlockTypes.AcaciaLeaves)
-        ),
+        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.AcaciaLog), createLeaf2Block('acacia')),
     },
     {
         name: 'Dark Oak',
-        type: new SimpleTree(
-            BlockPermutation.resolve(MinecraftBlockTypes.DarkOakLog),
-            BlockPermutation.resolve(MinecraftBlockTypes.DarkOakLeaves)
-        ),
+        type: new SimpleTree(BlockPermutation.resolve(MinecraftBlockTypes.DarkOakLog), createLeaf2Block('dark_oak')),
     },
 ];
 
@@ -270,12 +264,6 @@ function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
     // Create a pane that will be shown when the tool is selected
     const pane = uiSession.createPropertyPane({
         title: 'sample.treegenerator.pane.title',
-        infoTooltip: {
-            description: [
-                'sample.treegenerator.tool.tooltip',
-                { link: 'https://aka.ms/BedrockEditorTreeGenerator', text: 'resourcePack.editor.help.learnMore' },
-            ],
-        },
     });
 
     // Settings
@@ -408,12 +396,16 @@ function addTool(uiSession: IPlayerUISession) {
         },
     });
 
-    const tool = uiSession.toolRail.addTool('editorSample:treeGeneratorTool', {
-        title: 'sample.treegenerator.tool.title',
-        icon: 'pack://textures/tree-generator.png',
-        tooltip: 'sample.treegenerator.tool.tooltip',
-        action: toolToggleAction,
-    });
+    const tool = uiSession.toolRail.addTool(
+        {
+            title: 'sample.treegenerator.tool.title',
+            icon: 'pack://textures/tree-generator.png',
+            tooltip: 'sample.treegenerator.tool.tooltip',
+            inputContextId: 'editorSamples:treeGenerator',
+            inputContextLabel: 'sample.treegenerator.tool.title',
+        },
+        toolToggleAction
+    );
 
     // Register a global shortcut to select the tool
     uiSession.inputManager.registerKeyBinding(

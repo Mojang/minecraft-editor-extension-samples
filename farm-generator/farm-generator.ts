@@ -133,12 +133,6 @@ const buildFarm = (
 function addFarmGeneratorSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
     const windowPane = uiSession.createPropertyPane({
         title: 'sample.farmgenerator.pane.title',
-        infoTooltip: {
-            description: [
-                'sample.farmgenerator.tool.tooltip',
-                { link: 'https://aka.ms/BedrockEditorFarmGenerator', text: 'resourcePack.editor.help.learnMore' },
-            ],
-        },
     });
     const cropPane = windowPane.createSubPane({
         title: 'sample.farmgenerator.pane.crops.title',
@@ -387,12 +381,16 @@ function addFarmGeneratorTool(uiSession: IPlayerUISession) {
         },
     });
 
-    const tool = uiSession.toolRail.addTool('editorSample:farmTool', {
-        title: 'sample.farmgenerator.tool.title',
-        icon: 'pack://textures/farm-generator.png',
-        tooltip: 'sample.farmgenerator.tool.tooltip',
-        action: toolToggleAction,
-    });
+    const tool = uiSession.toolRail.addTool(
+        {
+            title: 'sample.farmgenerator.tool.title',
+            icon: 'pack://textures/farm-generator.png',
+            tooltip: 'sample.farmgenerator.tool.tooltip',
+            inputContextId: 'editorSamples:farmGenerator',
+            inputContextLabel: 'sample.farmgenerator.tool.title',
+        },
+        toolToggleAction
+    );
 
     // Register a global shortcut (CTRL + SHIFT + P) to select the tool
     uiSession.inputManager.registerKeyBinding(
