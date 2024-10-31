@@ -235,7 +235,6 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
         // additional components as needed (in this case, a status bar, a tool rail, and a property pane)
         // YOu can also specify an activation key binding and some functions to be called during the lifecycle of the tool
         const options: ISimpleToolOptions = {
-            id: 'sample:simpleEmptyTool',
             name: 'Simple Empty Tool',
             onFinalize: tool => {
                 tool.logDebug('onFinalize(ISimpleTool)');

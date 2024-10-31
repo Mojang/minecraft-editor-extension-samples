@@ -6,7 +6,6 @@ import {
     IDisposable,
     ImageResourceType,
     IObservable,
-    IRootPropertyPane,
     makeObservable,
     NumberPropertyItemVariant,
     Ray,
@@ -64,7 +63,7 @@ class PortalGenerator implements IDisposable {
     private _endPortal: EndPortal;
     private _activePortal?: IPortalGenerator;
 
-    private _pane?: IRootPropertyPane;
+    private _pane?: IPropertyPane;
     private _settings: PaneSettingsType = {
         portalType: makeObservable<number>(PortalType.Nether),
         shouldReplaceFloor: makeObservable(true),
@@ -75,7 +74,7 @@ class PortalGenerator implements IDisposable {
         this._endPortal = new EndPortal();
     }
 
-    public toolPane(uiSession: PortalGeneratorSession): IRootPropertyPane | undefined {
+    public toolPane(uiSession: PortalGeneratorSession): IPropertyPane | undefined {
         if (!this._pane) {
             uiSession.log.error('Tool pane not initialized');
             return undefined;
@@ -93,12 +92,14 @@ class PortalGenerator implements IDisposable {
         });
 
         // Add the extension to the tool rail and give it an icon
-        const tool = uiSession.toolRail.addTool('editorSample:portalTool', {
-            title: 'sample.portalgenerator.title',
-            icon: 'pack://textures/portal-generator.png',
-            tooltip: 'sample.portalgenerator.tooltip',
-            action: toolToggleAction,
-        });
+        const tool = uiSession.toolRail.addTool(
+            {
+                title: 'sample.portalgenerator.title',
+                icon: 'pack://textures/portal-generator.png',
+                tooltip: 'sample.portalgenerator.tooltip',
+            },
+            toolToggleAction
+        );
 
         // Register a global shortcut (CTRL + SHIFT + P) to select the tool
         uiSession.inputManager.registerKeyBinding(
