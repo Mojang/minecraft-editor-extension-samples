@@ -12,7 +12,6 @@ import {
     SimpleToolStatusBarVisibility,
     SimpleToolWrapper,
     StatusBarAlignment,
-    bindDataSource,
     makeObservable,
     registerEditorExtension,
 } from '@minecraft/server-editor';
@@ -89,8 +88,6 @@ export class SimpleEmptyTool extends SimpleToolWrapper {
 
                     onBeginFinalize: component => {
                         component.simpleTool.logDebug('onBeginFinalize(Sub-Pane(1))');
-
-                        this._settings = bindDataSource(component.pane, this._settings);
 
                         component.pane.addText('sample.simpleempty.tool.subpane1.text', {
                             border: false,

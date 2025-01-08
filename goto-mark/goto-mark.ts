@@ -11,7 +11,6 @@ import {
     IPropertyPane,
     IRootPropertyPane,
     UserDefinedTransactionHandle,
-    bindDataSource,
     makeObservable,
     registerEditorExtension,
     registerUserDefinedTransactionHandler,
@@ -40,11 +39,6 @@ type ParentPaneDataSourceType = {
     playerLocation: Vector3;
 };
 
-// UI Pane data for the sub pane with the stored locations
-type LocationPaneDataSourceType = {
-    newName: IObservable<string>;
-};
-
 // Extension storage data which is pertinent to the the player's context of this extension
 type ExtensionStorage = {
     tool?: IModalTool; // The tool handle for the extension
@@ -56,7 +50,7 @@ type ExtensionStorage = {
     parentPane?: IPropertyPane; // The parent pane
     dropdownMenu?: IDropdownPropertyItem; // The dropdown
 
-    locationPaneDataSource?: LocationPaneDataSourceType; // The data source for the location pane
+    newLocationName: IObservable<string>;
 
     storedLocations: LocationData[]; // The list of stored locations
 
@@ -130,14 +124,10 @@ function buildParentPane(uiSession: IPlayerUISession<ExtensionStorage>, storage:
         title: 'sample.gotomark.pane.title',
     });
 
-    const currentLocation = vector3Truncate(uiSession.extensionContext.player.location);
-    const initialPaneData: ParentPaneDataSourceType = {
-        playerLocation: currentLocation,
-    };
-    storage.parentPaneDataSource = bindDataSource(parentPane, initialPaneData);
-    storage.previousLocation = currentLocation;
+    const playerLocation = makeObservable<Vector3>(vector3Truncate(uiSession.extensionContext.player.location));
+    storage.previousLocation = playerLocation.value;
 
-    parentPane.addVector3_deprecated(storage.parentPaneDataSource, 'playerLocation', {
+    parentPane.addVector3(playerLocation, {
         title: 'sample.gotomark.pane.location',
     });
 
@@ -249,11 +239,6 @@ function buildLocationPane(
 
     const currentSelection = makeObservable(initialSelection);
 
-    const initialPaneData: LocationPaneDataSourceType = {
-        newName: makeObservable(''),
-    };
-    storage.locationPaneDataSource = bindDataSource(locationPane, initialPaneData);
-
     const dropdownItems = mapDropdownItems(storage);
 
     storage.dropdownMenu = locationPane.addDropdown(currentSelection, {
@@ -276,11 +261,6 @@ function buildLocationPane(
         uiSession.actionManager.createAction({
             actionType: ActionTypes.NoArgsAction,
             onExecute: () => {
-                if (!storage.locationPaneDataSource) {
-                    uiSession.log.error('An error occurred: No UI pane datasource could be found');
-                    return;
-                }
-
                 if (currentSelection.value < 0 || currentSelection.value >= storage.storedLocations.length) {
                     uiSession.log.error('No stored locations to delete');
                     return;
@@ -303,11 +283,6 @@ function buildLocationPane(
         uiSession.actionManager.createAction({
             actionType: ActionTypes.NoArgsAction,
             onExecute: () => {
-                if (!storage.locationPaneDataSource) {
-                    uiSession.log.error('An error occurred: No UI pane datasource could be found');
-                    return;
-                }
-
                 const selectionValue = currentSelection.value;
                 if (selectionValue < 0 || selectionValue >= storage.storedLocations.length) {
                     uiSession.log.error('No stored locations to delete');
@@ -338,7 +313,7 @@ function buildLocationPane(
         }
     );
 
-    locationPane.addString(storage.locationPaneDataSource.newName, {
+    locationPane.addString(storage.newLocationName, {
         title: 'sample.gotomark.pane.locationpane.input.name',
     });
 
@@ -346,7 +321,7 @@ function buildLocationPane(
         uiSession.actionManager.createAction({
             actionType: ActionTypes.NoArgsAction,
             onExecute: () => {
-                if (!storage.parentPaneDataSource || !storage.locationPaneDataSource) {
+                if (!storage.parentPaneDataSource) {
                     uiSession.log.error('An error occurred: No UI pane datasource could be found');
                     return;
                 }
@@ -355,7 +330,7 @@ function buildLocationPane(
                     return;
                 }
                 const currentLocation = vector3Truncate(storage.parentPaneDataSource.playerLocation);
-                const newName = storage.locationPaneDataSource.newName;
+                const newName = storage.newLocationName;
                 if (!newName.value) {
                     newName.set(`Location ${storage.storedLocations.length + 1}`);
                 } else {
@@ -406,6 +381,7 @@ export function registerGotoMarkExtension() {
             const storage: ExtensionStorage = {
                 previousLocation: uiSession.extensionContext.player.location,
                 storedLocations: [],
+                newLocationName: makeObservable(''),
                 transactionHandler: registerUserDefinedTransactionHandler<GotoTeleportTransactionPayload>(
                     uiSession.extensionContext.transactionManager,
                     (payload: GotoTeleportTransactionPayload) => {
