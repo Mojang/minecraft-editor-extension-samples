@@ -267,14 +267,14 @@ class NetherPortal implements IPortalGenerator {
         subPane.addNumber(this._sizeX, {
             title: 'sample.portalgenerator.pane.nether.pane.width',
             min: 4,
-            max: 33,
+            max: 23,
             isInteger: true,
         });
 
         subPane.addNumber(this._sizeY, {
             title: 'sample.portalgenerator.pane.nether.pane.height',
             min: 5,
-            max: 33,
+            max: 23,
             isInteger: true,
         });
 
