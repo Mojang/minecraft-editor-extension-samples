@@ -122,7 +122,7 @@ export function registerStarBrushExtension() {
 
             uiSession.extensionContext.brushShapeManager.registerBrushShape(
                 'Star-sample',
-                'star',
+                'pack://textures/editor/brushes/Star.png',
                 rebuildStar,
                 getStarUISettings
             );
