@@ -32,7 +32,7 @@ type LocateBiomeSourceType = {
 
 type ResultsType = {
     foundType: string;
-    foundPos: Vector3;
+    foundPos: IObservable<Vector3>;
 };
 
 // Implementation of a simple tool that allows the player to locate a biome
@@ -41,7 +41,7 @@ type ResultsType = {
 export class SimpleLocate extends SimpleToolWrapper {
     private _results: ResultsType = {
         foundType: '',
-        foundPos: VECTOR3_ZERO,
+        foundPos: makeObservable<Vector3>(VECTOR3_ZERO),
     };
 
     // Activate the results pane with the found biome/structure and position in the
@@ -51,7 +51,7 @@ export class SimpleLocate extends SimpleToolWrapper {
         this.simpleTool.logInfo(`Found ${biome} at ${Vector3Utils.toString(pos)}`);
 
         this._results.foundType = biome;
-        this._results.foundPos = pos;
+        this._results.foundPos.set(pos);
 
         // Hopefully, we'll be able to get rid of this function in the near future.
         // reconstructing the pane is a last-resort hack to get the pane to update
@@ -185,7 +185,7 @@ export class SimpleLocate extends SimpleToolWrapper {
         const actualPane = component.pane;
         actualPane.addText(`Found ${this._results.foundType}`);
 
-        actualPane.addVector3_deprecated(this._results, 'foundPos', {
+        actualPane.addVector3(this._results.foundPos, {
             title: 'sample.simplelocate.tool.results.foundat',
             enable: false,
             visible: true,
@@ -196,7 +196,7 @@ export class SimpleLocate extends SimpleToolWrapper {
                 actionType: ActionTypes.NoArgsAction,
                 onExecute: () => {
                     const pos = this._results.foundPos;
-                    component.session.extensionContext.player.teleport(pos);
+                    component.session.extensionContext.player.teleport(pos.value);
                 },
             }),
             {
