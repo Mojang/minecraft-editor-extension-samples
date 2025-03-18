@@ -92,12 +92,11 @@ export function registerCameraGrapple() {
                     if (uiSession.scratchStorage?.latestRunId) {
                         return;
                     }
-                    const selection = uiSession.extensionContext.selectionManager.selection;
-                    if (selection.isEmpty) {
+                    if (uiSession.extensionContext.selectionManager.volume.isEmpty) {
                         return;
                     }
 
-                    const bounds = selection.getBoundingBox();
+                    const bounds = uiSession.extensionContext.selectionManager.volume.getBoundingBox();
                     bounds.max = Vector3Utils.add(bounds.max, { x: 1, y: 1, z: 1 });
                     const halfSize = Vector3Utils.scale(Vector3Utils.subtract(bounds.max, bounds.min), 0.5);
                     const viewTarget = Vector3Utils.add(bounds.min, halfSize);
