@@ -339,6 +339,8 @@ function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
         uiSession.extensionContext.transactionManager.commitOpenTransaction();
     };
 
+    pane.beginConstruct();
+
     // Add a dropdown for available tree types
     pane.addDropdown(settings.treeType, {
         title: 'sample.treegenerator.pane.type',
@@ -381,7 +383,8 @@ function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
     );
     tool.bindPropertyPane(pane);
 
-    pane.hide();
+    pane.endConstruct();
+
     // Create an action that will be executed on left mouse click
     const executeMouseAction = uiSession.actionManager.createAction({
         actionType: ActionTypes.MouseRayCastAction,
