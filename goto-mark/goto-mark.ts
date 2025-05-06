@@ -3,7 +3,7 @@
 import {
     ActionTypes,
     IButtonPropertyItem,
-    IDropdownItem,
+    IDropdownPropertyItemEntry,
     IDropdownPropertyItem,
     IModalTool,
     IObservable,
@@ -75,9 +75,9 @@ function vector3Truncate(vec: Vector3): Vector3 {
     return blockLocation;
 }
 
-function mapDropdownItems(storage: ExtensionStorage): IDropdownItem[] {
-    return storage.storedLocations.map((v, index): IDropdownItem => {
-        const item: IDropdownItem = {
+function mapDropdownItems(storage: ExtensionStorage): IDropdownPropertyItemEntry[] {
+    return storage.storedLocations.map((v, index): IDropdownPropertyItemEntry => {
+        const item: IDropdownPropertyItemEntry = {
             label: `${index + 1}: ${v.name} (${vector3ToString(v.location)})`,
             value: index,
         };
