@@ -3,7 +3,7 @@
 import { VECTOR3_ZERO, Vector3Utils } from '@minecraft/math';
 import {
     ActionTypes,
-    IDropdownItem,
+    IDropdownPropertyItemEntry,
     IObservable,
     IPlayerUISession,
     ISimpleToolOptions,
@@ -138,7 +138,7 @@ export class SimpleLocate extends SimpleToolWrapper {
 
         const listOfBiomes = BiomeTypes.getAll().map((v, i) => {
             const names = v.id;
-            const item: IDropdownItem = {
+            const item: IDropdownPropertyItemEntry = {
                 label: names.replace('minecraft:', '').replace('_', ' '),
                 value: i,
             };
@@ -230,7 +230,7 @@ export class SimpleLocate extends SimpleToolWrapper {
             },
 
             propertyPaneOptions: {
-                id: 'pane',
+                id: 'editorSamples:pane:locateBiome',
                 title: 'sample.simplelocate.tool.title',
 
                 childPaneInitiallyVisible: 'typeSelector',
