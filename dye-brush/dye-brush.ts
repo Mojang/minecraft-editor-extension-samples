@@ -5,7 +5,7 @@ import {
     ColorPickerPropertyItemVariant,
     CursorProperties,
     CursorTargetMode,
-    IDropdownItem,
+    IDropdownPropertyItemEntry,
     IModalTool,
     IObservable,
     IPlayerUISession,
@@ -15,20 +15,24 @@ import {
     MouseInputType,
     MouseProps,
     registerEditorExtension,
-    Selection,
+    RelativeVolumeListBlockVolume,
+    ThemeSettingsColorKey,
+    Widget,
+    WidgetComponentVolumeOutline,
+    WidgetGroup,
 } from '@minecraft/server-editor';
 import {
     BlockVolume,
-    BoundingBox,
-    BoundingBoxUtils,
+    BlockBoundingBox,
+    BlockBoundingBoxUtils,
     RGBA,
-    CompoundBlockVolumeAction,
     Dimension,
     Direction,
     EntityColorComponent,
     Player,
     Vector3,
     RGB,
+    BlockLocationIterator,
 } from '@minecraft/server';
 import { Vector3Utils, VECTOR3_UP } from '@minecraft/math';
 
@@ -134,8 +138,8 @@ const colorPalette = new Map<EntityColor, RGB>([
 ]);
 
 interface DyeBrushStorage {
-    previewSelection: Selection;
-    lastVolumePlaced?: BoundingBox;
+    previewSelection: PreviewVolume;
+    lastVolumePlaced?: BlockBoundingBox;
     currentColor: EntityColor;
     brushColor: IObservable<RGBA>;
     brushSize: number;
@@ -144,10 +148,118 @@ interface DyeBrushStorage {
 
 type DyeBrushSession = IPlayerUISession<DyeBrushStorage>;
 
+class PreviewVolume {
+    private _session: IPlayerUISession;
+    private _widgetGroup: WidgetGroup;
+    private _widget: Widget;
+    private _widgetVolumeComponent: WidgetComponentVolumeOutline;
+    private _volume: RelativeVolumeListBlockVolume;
+    private _outlineColor: RGBA;
+    private _hullColor: RGBA;
+    private _highlightOutlineColor: RGBA;
+    private _highlightHullColor: RGBA;
+
+    constructor(uiSession: IPlayerUISession) {
+        this._session = uiSession;
+
+        this._outlineColor = this.session.extensionContext.settings.theme.resolveColorKey(
+            ThemeSettingsColorKey.SelectionVolumeFill
+        );
+        this._hullColor = this.session.extensionContext.settings.theme.resolveColorKey(
+            ThemeSettingsColorKey.SelectionVolumeBorder
+        );
+        this._highlightOutlineColor = this.session.extensionContext.settings.theme.resolveColorKey(
+            ThemeSettingsColorKey.SelectionVolumeOutlineBorder
+        );
+        this._highlightHullColor = this.session.extensionContext.settings.theme.resolveColorKey(
+            ThemeSettingsColorKey.SelectionVolumeOutlineFill
+        );
+
+        const dimensionBounds = this.session.extensionContext.blockUtilities.getDimensionLocationBoundingBox();
+        const center = BlockBoundingBoxUtils.getCenter(dimensionBounds);
+
+        this._volume = new RelativeVolumeListBlockVolume();
+        this._widgetGroup = this.session.extensionContext.widgetManager.createGroup({ visible: true });
+        this._widget = this._widgetGroup.createWidget(center, { visible: false, selectable: false });
+        this._widgetVolumeComponent = this._widget.addVolumeOutline('outline', this._volume, {
+            outlineColor: this._outlineColor,
+            hullColor: this._hullColor,
+            highlightOutlineColor: this._highlightOutlineColor,
+            highlightHullColor: this._highlightHullColor,
+            showOutline: false,
+            showHighlightOutline: true,
+            visible: true,
+        });
+    }
+
+    public teardown() {
+        this._widgetVolumeComponent.delete();
+        this._widget.delete();
+        this._widgetGroup.delete();
+    }
+
+    public get session(): IPlayerUISession {
+        return this._session;
+    }
+
+    public get visible(): boolean {
+        return this._widget.visible;
+    }
+
+    public set visible(value: boolean) {
+        this._widget.visible = value;
+    }
+
+    public get location(): Vector3 {
+        return this._widget.location;
+    }
+
+    public set location(position: Vector3) {
+        this._widget.location = position;
+    }
+
+    public set outlineColor(value: RGBA) {
+        this._outlineColor = value;
+        this._widgetVolumeComponent.outlineColor = value;
+    }
+
+    public set hullColor(value: RGBA) {
+        this._hullColor = value;
+        this._widgetVolumeComponent.hullColor = value;
+    }
+
+    public set highlightOutlineColor(value: RGBA) {
+        this._highlightOutlineColor = value;
+        this._widgetVolumeComponent.highlightOutlineColor = value;
+    }
+
+    public set highlightHullColor(value: RGBA) {
+        this._highlightHullColor = value;
+        this._widgetVolumeComponent.highlightHullColor = value;
+    }
+
+    public addVolume(volume: BlockVolume) {
+        this._volume.add(volume);
+        if (this._volume.isEmpty) {
+            return;
+        }
+        const bounds = this._volume.getBoundingBox();
+        this._widget.location = bounds.min;
+    }
+
+    public clearVolume() {
+        this._volume.clear();
+    }
+
+    public get locationIterator(): BlockLocationIterator {
+        return this._volume.getBlockLocationIterator();
+    }
+}
+
 function onColorUpdated(newColor: RGBA, uiSession: DyeBrushSession) {
     if (uiSession.scratchStorage) {
-        uiSession.scratchStorage.previewSelection.setFillColor(newColor);
-        uiSession.scratchStorage.previewSelection.setOutlineColor({ ...newColor, alpha: 1 });
+        uiSession.scratchStorage.previewSelection.hullColor = newColor;
+        uiSession.scratchStorage.previewSelection.outlineColor = { ...newColor, alpha: 1 };
         const cursorProps = uiSession.extensionContext.cursor.getProperties();
         cursorProps.outlineColor = { ...newColor, alpha: 1 };
         cursorProps.targetMode = CursorTargetMode.Face;
@@ -171,7 +283,7 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
 
     pane.addDropdown(entityBrush, {
         title: 'Brush',
-        entries: Object.values(EntityColor).reduce<IDropdownItem[]>((list, dye, index) => {
+        entries: Object.values(EntityColor).reduce<IDropdownPropertyItemEntry[]>((list, dye, index) => {
             if (typeof dye === 'string') {
                 list.push({
                     label: dye,
@@ -240,12 +352,12 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
         const blockVolume = new BlockVolume(from, to);
         const bounds = blockVolume.getBoundingBox();
         if (uiSession.scratchStorage.lastVolumePlaced) {
-            if (BoundingBoxUtils.equals(uiSession.scratchStorage.lastVolumePlaced, bounds)) {
+            if (BlockBoundingBoxUtils.equals(uiSession.scratchStorage.lastVolumePlaced, bounds)) {
                 return;
             }
         }
 
-        previewSelection.pushVolume({ action: CompoundBlockVolumeAction.Add, volume: blockVolume });
+        previewSelection.addVolume(blockVolume);
         uiSession.scratchStorage.lastVolumePlaced = bounds;
     };
 
@@ -259,12 +371,12 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
 
             if (mouseProps.mouseAction === MouseActionType.LeftButton) {
                 if (mouseProps.inputType === MouseInputType.ButtonDown) {
-                    uiSession.scratchStorage.previewSelection.clear();
+                    uiSession.scratchStorage.previewSelection.clearVolume();
                     onExecuteBrush();
                 } else if (mouseProps.inputType === MouseInputType.ButtonUp) {
                     const player: Player = uiSession.extensionContext.player;
                     const dimension: Dimension = player.dimension;
-                    const iterator = uiSession.scratchStorage.previewSelection.getBlockLocationIterator();
+                    const iterator = uiSession.scratchStorage.previewSelection.locationIterator;
                     for (const pos of iterator) {
                         const entities = dimension.getEntities({ location: pos, closest: 1 });
                         for (const entity of entities) {
@@ -274,7 +386,7 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
                             }
                         }
                     }
-                    uiSession.scratchStorage.previewSelection.clear();
+                    uiSession.scratchStorage.previewSelection.clearVolume();
                 }
             }
         },
@@ -323,7 +435,7 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
                 uiSession.scratchStorage.backedUpCursorProps = undefined;
             }
         }
-        uiSession.scratchStorage?.previewSelection?.clear();
+        uiSession.scratchStorage?.previewSelection?.clearVolume();
     });
 
     pane.hide();
@@ -346,7 +458,7 @@ export function registerDyeBrushExtension() {
         (uiSession: IPlayerUISession<DyeBrushStorage>) => {
             uiSession.log.debug(`Initializing extension [${uiSession.extensionContext.extensionInfo.name}]`);
 
-            const previewSelection = uiSession.extensionContext.selectionManager.create();
+            const previewSelection = new PreviewVolume(uiSession as unknown as IPlayerUISession);
             previewSelection.visible = true;
 
             const storage: DyeBrushStorage = {
