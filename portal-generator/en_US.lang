@@ -2,7 +2,14 @@
 ##
 ## Note, trailing spaces will NOT be trimmed. If you want room between the end of the string and the start of a
 ## comment on the same line, use TABs.
-sample.portalgenerator.title=Portal Generator
+sample.gotomark.tool.title=Sample Goto Mark	### Sample Text. {MaxLength=1000}
+sample.cameragrapple.title=Sample Camera Base Grapple	### Sample Text. {MaxLength=1000}
+sample.cameragrapple.keyBinding.flyToCursor=Fly To Cursor (Sample)	### Sample Text. {MaxLength=1000}
+sample.cameragrapple.keyBinding.flyToSelection=Fly To Selection (Sample)	### Sample Text. {MaxLength=1000}
+sample.dyebrush.tool.title=Sample Dye Brush	### Sample Text. {MaxLength=1000}
+sample.farmgenerator.tool.title=Sample Farm Generator	### Sample Text. {MaxLength=1000}
+sample.farmgenerator.keyBinding.toggleTool=Sample Farm Generator	### Sample Text. {MaxLength=1000}
+sample.portalgenerator.title=Sample Portal Generator	### Sample Text. {MaxLength=1000}
 sample.portalgenerator.tooltip=Create Portals with a single click
 sample.portalgenerator.pane.title=Portal Generator
 sample.portalgenerator.pane.replacefloor=Replace Floor
@@ -20,4 +27,6 @@ sample.portalgenerator.pane.nether.pane.corners.tooltip=Adds corner blocks to th
 sample.portalgenerator.pane.nether.pane.percentage=Percentage Complete
 sample.portalgenerator.pane.end.pane.title=End Portal
 sample.portalgenerator.pane.end.pane.filledcount=Filled 'Eye of Ender' count
-sample.portalgenerator.keyBinding.toggleTool=Toggle Portal Generator Tool
+sample.portalgenerator.keyBinding.toggleTool=Sample Portal Generator	### Sample Text. {MaxLength=1000}
+sample.treegenerator.tool.title=Sample Tree Generator	### Sample Text. {MaxLength=1000}
+sample.treegenerator.keyBinding.toggleTool=Sample Tree Generator	### Sample Text. {MaxLength=1000}
