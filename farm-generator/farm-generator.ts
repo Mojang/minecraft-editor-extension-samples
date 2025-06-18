@@ -398,7 +398,7 @@ function addFarmGeneratorTool(uiSession: IPlayerUISession) {
     uiSession.inputManager.registerKeyBinding(
         EditorInputContext.GlobalToolMode,
         toolToggleAction,
-        { key: KeyboardKey.KEY_F, modifier: InputModifier.Control | InputModifier.Shift },
+        { key: KeyboardKey.KEY_F, modifier: InputModifier.Control | InputModifier.Shift | InputModifier.Alt },
         {
             uniqueId: 'editorSamples:farmGenerator:toggleTool',
             label: 'sample.farmgenerator.keyBinding.toggleTool',
