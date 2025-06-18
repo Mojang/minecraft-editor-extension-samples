@@ -278,6 +278,7 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
         title: 'sample.dyeBrush.pane.title',
         infoTooltip: { description: ['sample.dyebrush.tool.tooltip'] },
     });
+    pane.beginConstruct();
 
     const entityBrush = makeObservable(EntityColor.White);
 
@@ -310,6 +311,8 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
             onColorUpdated(brushColor.value, uiSession);
         },
     });
+
+    pane.endConstruct();
 
     tool.bindPropertyPane(pane);
 
@@ -437,8 +440,6 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
         }
         uiSession.scratchStorage?.previewSelection?.clearVolume();
     });
-
-    pane.hide();
 }
 
 export function addDyeBrushTool(uiSession: DyeBrushSession) {
