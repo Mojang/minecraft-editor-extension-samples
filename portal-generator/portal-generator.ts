@@ -104,7 +104,7 @@ class PortalGenerator implements IDisposable {
         uiSession.inputManager.registerKeyBinding(
             EditorInputContext.GlobalToolMode,
             toolToggleAction,
-            { key: KeyboardKey.KEY_P, modifier: InputModifier.Control | InputModifier.Shift },
+            { key: KeyboardKey.KEY_P, modifier: InputModifier.Control | InputModifier.Shift | InputModifier.Alt },
             {
                 uniqueId: 'editorSamples:portalGenerator:toggleTool',
                 label: 'sample.portalgenerator.keyBinding.toggleTool',
@@ -178,8 +178,6 @@ class PortalGenerator implements IDisposable {
     }
 
     activatePortalGenerator(uiSession: PortalGeneratorSession, portalType: PortalType): void {
-        this._pane?.hide();
-
         if (this._activePortal) {
             this._activePortal.deactivatePane();
         }
@@ -191,8 +189,6 @@ class PortalGenerator implements IDisposable {
         }
 
         this._activePortal.activatePane(uiSession);
-
-        this._pane?.show();
     }
 }
 
@@ -227,15 +223,12 @@ class NetherPortal implements IPortalGenerator {
         }
 
         this._pane = this.buildSubPane(uiSession);
-        this._pane?.show();
     }
 
     deactivatePane(): void {
         if (this._pane) {
-            this._pane.hide();
             this._parentPane?.removeSubPane(this._pane);
         }
-
         this._pane = undefined;
     }
 
@@ -249,6 +242,8 @@ class NetherPortal implements IPortalGenerator {
         const subPane = windowPane.createSubPane({
             title: 'sample.portalgenerator.pane.nether.pane.title',
         });
+
+        subPane.beginConstruct();
 
         subPane.addDropdown(this._orientation, {
             title: 'sample.portalgenerator.pane.nether.pane.orientation',
@@ -289,6 +284,8 @@ class NetherPortal implements IPortalGenerator {
             max: 100,
             variant: NumberPropertyItemVariant.InputFieldAndSlider,
         });
+
+        subPane.endConstruct();
 
         return subPane;
     }
@@ -429,17 +426,13 @@ class EndPortal implements IPortalGenerator {
         if (this._pane) {
             this.deactivatePane();
         }
-
         this._pane = this.buildSubPane(uiSession);
-        this._pane?.show();
     }
 
     deactivatePane(): void {
         if (this._pane) {
-            this._pane.hide();
             this._parentPane?.removeSubPane(this._pane);
         }
-
         this._pane = undefined;
     }
 
@@ -454,6 +447,8 @@ class EndPortal implements IPortalGenerator {
             title: 'sample.portalgenerator.pane.end.pane.title',
         });
 
+        subPane.beginConstruct();
+
         subPane.addNumber(this._filledEyeCount, {
             title: 'sample.portalgenerator.pane.end.pane.filledcount',
             min: 0,
@@ -461,6 +456,8 @@ class EndPortal implements IPortalGenerator {
             variant: NumberPropertyItemVariant.InputFieldAndSlider,
             isInteger: true,
         });
+
+        subPane.endConstruct();
 
         return subPane;
     }
