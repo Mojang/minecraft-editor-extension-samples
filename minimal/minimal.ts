@@ -66,6 +66,7 @@ export function registerMinimalExtension() {
             // when you adjust the slider, you can inspect the binding object property 'mySlider' for the current value.
             const extensionPane = uiSession.createPropertyPane({
                 title: 'sample.minimal.pane.title',
+                uniqueId: 'editorSamples:pane:minimal',
             });
 
             // Creating UI elements like buttons and sliders require a couple of simple steps.
