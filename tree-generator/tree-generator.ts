@@ -339,6 +339,8 @@ function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
         uiSession.extensionContext.transactionManager.commitOpenTransaction();
     };
 
+    pane.beginConstruct();
+
     // Add a dropdown for available tree types
     pane.addDropdown(settings.treeType, {
         title: 'sample.treegenerator.pane.type',
@@ -381,7 +383,8 @@ function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
     );
     tool.bindPropertyPane(pane);
 
-    pane.hide();
+    pane.endConstruct();
+
     // Create an action that will be executed on left mouse click
     const executeMouseAction = uiSession.actionManager.createAction({
         actionType: ActionTypes.MouseRayCastAction,
@@ -423,7 +426,7 @@ function addTool(uiSession: IPlayerUISession) {
     uiSession.inputManager.registerKeyBinding(
         EditorInputContext.GlobalToolMode,
         toolToggleAction,
-        { key: KeyboardKey.KEY_T, modifier: InputModifier.Control | InputModifier.Shift },
+        { key: KeyboardKey.KEY_T, modifier: InputModifier.Control | InputModifier.Shift | InputModifier.Alt },
         { uniqueId: 'editorSamples:treeGenerator:toggleTool', label: 'sample.treegenerator.keyBinding.toggleTool' }
     );
 
