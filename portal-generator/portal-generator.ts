@@ -7,6 +7,7 @@ import {
     ImageResourceType,
     IObservable,
     IRootPropertyPane,
+    LogChannel,
     makeObservable,
     NumberPropertyItemVariant,
     Ray,
@@ -77,7 +78,7 @@ class PortalGenerator implements IDisposable {
 
     public toolPane(uiSession: PortalGeneratorSession): IRootPropertyPane | undefined {
         if (!this._pane) {
-            uiSession.log.error('Tool pane not initialized');
+            uiSession.log.error('Tool pane not initialized', { channelMask: LogChannel.All });
             return undefined;
         }
         return this._pane;
@@ -104,7 +105,7 @@ class PortalGenerator implements IDisposable {
         uiSession.inputManager.registerKeyBinding(
             EditorInputContext.GlobalToolMode,
             toolToggleAction,
-            { key: KeyboardKey.KEY_P, modifier: InputModifier.Control | InputModifier.Shift },
+            { key: KeyboardKey.KEY_P, modifier: InputModifier.Control | InputModifier.Shift | InputModifier.Alt },
             {
                 uniqueId: 'editorSamples:portalGenerator:toggleTool',
                 label: 'sample.portalgenerator.keyBinding.toggleTool',
@@ -178,8 +179,6 @@ class PortalGenerator implements IDisposable {
     }
 
     activatePortalGenerator(uiSession: PortalGeneratorSession, portalType: PortalType): void {
-        this._pane?.hide();
-
         if (this._activePortal) {
             this._activePortal.deactivatePane();
         }
@@ -191,8 +190,6 @@ class PortalGenerator implements IDisposable {
         }
 
         this._activePortal.activatePane(uiSession);
-
-        this._pane?.show();
     }
 }
 
@@ -211,7 +208,7 @@ class NetherPortal implements IPortalGenerator {
 
     public subPane(uiSession: PortalGeneratorSession): IPropertyPane | undefined {
         if (!this._pane) {
-            uiSession.log.error('Sub pane not initialized');
+            uiSession.log.error('Sub pane not initialized', { channelMask: LogChannel.All });
             return undefined;
         }
         return this._pane;
@@ -227,28 +224,27 @@ class NetherPortal implements IPortalGenerator {
         }
 
         this._pane = this.buildSubPane(uiSession);
-        this._pane?.show();
     }
 
     deactivatePane(): void {
         if (this._pane) {
-            this._pane.hide();
             this._parentPane?.removeSubPane(this._pane);
         }
-
         this._pane = undefined;
     }
 
     buildSubPane(uiSession: PortalGeneratorSession): IPropertyPane | undefined {
         const windowPane = this._parentPane;
         if (!windowPane) {
-            uiSession.log.error('Failed to find window binding');
+            uiSession.log.error('Failed to find window binding', { channelMask: LogChannel.All });
             return undefined;
         }
 
         const subPane = windowPane.createSubPane({
             title: 'sample.portalgenerator.pane.nether.pane.title',
         });
+
+        subPane.beginConstruct();
 
         subPane.addDropdown(this._orientation, {
             title: 'sample.portalgenerator.pane.nether.pane.orientation',
@@ -290,6 +286,8 @@ class NetherPortal implements IPortalGenerator {
             variant: NumberPropertyItemVariant.InputFieldAndSlider,
         });
 
+        subPane.endConstruct();
+
         return subPane;
     }
 
@@ -330,7 +328,7 @@ class NetherPortal implements IPortalGenerator {
                 z: location.z + this._sizeX.value,
             };
         } else {
-            uiSession.log.error('Failed to get valid orientation');
+            uiSession.log.error('Failed to get valid orientation', { channelMask: LogChannel.All });
             uiSession.extensionContext.transactionManager.discardOpenTransaction();
             return;
         }
@@ -415,7 +413,7 @@ class EndPortal implements IPortalGenerator {
 
     public subPane(uiSession: PortalGeneratorSession): IPropertyPane | undefined {
         if (!this._pane) {
-            uiSession.log.error('Sub pane not initialized');
+            uiSession.log.error('Sub pane not initialized', { channelMask: LogChannel.All });
             return undefined;
         }
         return this._pane;
@@ -429,30 +427,28 @@ class EndPortal implements IPortalGenerator {
         if (this._pane) {
             this.deactivatePane();
         }
-
         this._pane = this.buildSubPane(uiSession);
-        this._pane?.show();
     }
 
     deactivatePane(): void {
         if (this._pane) {
-            this._pane.hide();
             this._parentPane?.removeSubPane(this._pane);
         }
-
         this._pane = undefined;
     }
 
     buildSubPane(uiSession: PortalGeneratorSession): IPropertyPane | undefined {
         const windowPane = this._parentPane;
         if (!windowPane) {
-            uiSession.log.error('Failed to find window pane');
+            uiSession.log.error('Failed to find window pane', { channelMask: LogChannel.All });
             return undefined;
         }
 
         const subPane = windowPane.createSubPane({
             title: 'sample.portalgenerator.pane.end.pane.title',
         });
+
+        subPane.beginConstruct();
 
         subPane.addNumber(this._filledEyeCount, {
             title: 'sample.portalgenerator.pane.end.pane.filledcount',
@@ -461,6 +457,8 @@ class EndPortal implements IPortalGenerator {
             variant: NumberPropertyItemVariant.InputFieldAndSlider,
             isInteger: true,
         });
+
+        subPane.endConstruct();
 
         return subPane;
     }
@@ -471,7 +469,7 @@ class EndPortal implements IPortalGenerator {
 
         const targetBlock = me.dimension.getBlock(location);
         if (targetBlock === undefined) {
-            uiSession.log.error('No block selected');
+            uiSession.log.error('No block selected', { channelMask: LogChannel.All });
             return;
         }
 
@@ -534,7 +532,7 @@ class EndPortal implements IPortalGenerator {
                         i += 1;
                     }
                 } else {
-                    uiSession.log.error('Failed to get block');
+                    uiSession.log.error('Failed to get block', { channelMask: LogChannel.All });
                 }
             }
         }
