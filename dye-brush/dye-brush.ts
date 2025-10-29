@@ -9,6 +9,7 @@ import {
     IModalTool,
     IObservable,
     IPlayerUISession,
+    LogChannel,
     makeObservable,
     ModalToolLifecycleEventPayload,
     MouseActionType,
@@ -278,6 +279,7 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
         title: 'sample.dyeBrush.pane.title',
         infoTooltip: { description: ['sample.dyebrush.tool.tooltip'] },
     });
+    pane.beginConstruct();
 
     const entityBrush = makeObservable(EntityColor.White);
 
@@ -311,11 +313,13 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
         },
     });
 
+    pane.endConstruct();
+
     tool.bindPropertyPane(pane);
 
     const onExecuteBrush = () => {
         if (uiSession.scratchStorage === undefined) {
-            uiSession.log.error('Storage was not initialized.');
+            uiSession.log.error('Storage was not initialized.', { channelMask: LogChannel.All });
             return;
         }
 
@@ -365,7 +369,7 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
         actionType: ActionTypes.MouseRayCastAction,
         onExecute: (_, mouseProps: MouseProps) => {
             if (uiSession.scratchStorage === undefined) {
-                uiSession.log.error('Storage was not initialized.');
+                uiSession.log.error('Storage was not initialized.', { channelMask: LogChannel.All });
                 return;
             }
 
@@ -407,7 +411,7 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
     const executeBrushSizeAction = uiSession.actionManager.createAction({
         actionType: ActionTypes.MouseRayCastAction,
         onExecute: (_, mouseProps: MouseProps) => {
-            if (mouseProps.mouseAction === MouseActionType.Wheel) {
+            if (mouseProps.mouseAction === MouseActionType.Wheel && mouseProps.modifiers.shift) {
                 if (mouseProps.inputType === MouseInputType.WheelOut) {
                     if (entityBrush.value > 0) {
                         entityBrush.set(entityBrush.value - 1);
@@ -437,8 +441,6 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
         }
         uiSession.scratchStorage?.previewSelection?.clearVolume();
     });
-
-    pane.hide();
 }
 
 export function addDyeBrushTool(uiSession: DyeBrushSession) {
