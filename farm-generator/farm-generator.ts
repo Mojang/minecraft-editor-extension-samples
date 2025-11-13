@@ -9,6 +9,7 @@ import {
     IPlayerUISession,
     InputModifier,
     KeyboardKey,
+    LogChannel,
     MouseActionType,
     MouseInputType,
     MouseProps,
@@ -178,7 +179,7 @@ function addFarmGeneratorSettingsPane(uiSession: IPlayerUISession, tool: IModalT
                 : player.getBlockFromViewDirection();
 
         if (!raycastResult) {
-            uiSession.log.error('No block from view vector');
+            uiSession.log.error('No block from view vector', { channelMask: LogChannel.All });
             return;
         }
         const targetBlock = raycastResult.block;
@@ -398,7 +399,7 @@ function addFarmGeneratorTool(uiSession: IPlayerUISession) {
     uiSession.inputManager.registerKeyBinding(
         EditorInputContext.GlobalToolMode,
         toolToggleAction,
-        { key: KeyboardKey.KEY_F, modifier: InputModifier.Control | InputModifier.Shift },
+        { key: KeyboardKey.KEY_F, modifier: InputModifier.Control | InputModifier.Shift | InputModifier.Alt },
         {
             uniqueId: 'editorSamples:farmGenerator:toggleTool',
             label: 'sample.farmgenerator.keyBinding.toggleTool',
