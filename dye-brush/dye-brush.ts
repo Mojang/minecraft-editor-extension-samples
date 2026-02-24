@@ -3,12 +3,12 @@
 import {
     ActionTypes,
     ColorPickerPropertyItemVariant,
-    CursorProperties,
     CursorTargetMode,
     IDropdownPropertyItemEntry,
     IModalTool,
     IObservable,
     IPlayerUISession,
+    LogChannel,
     makeObservable,
     ModalToolLifecycleEventPayload,
     MouseActionType,
@@ -35,6 +35,8 @@ import {
     BlockLocationIterator,
 } from '@minecraft/server';
 import { Vector3Utils, VECTOR3_UP } from '@minecraft/math';
+
+const MODAL_TOOL_ID = 'editorSample:dyeBrushTool';
 
 // Color identifiers expected by EntityColorComponent
 enum EntityColor {
@@ -143,7 +145,6 @@ interface DyeBrushStorage {
     currentColor: EntityColor;
     brushColor: IObservable<RGBA>;
     brushSize: number;
-    backedUpCursorProps: CursorProperties | undefined;
 }
 
 type DyeBrushSession = IPlayerUISession<DyeBrushStorage>;
@@ -256,14 +257,19 @@ class PreviewVolume {
     }
 }
 
-function onColorUpdated(newColor: RGBA, uiSession: DyeBrushSession) {
+function onColorUpdated(newColor: RGBA, uiSession: DyeBrushSession, isActivation: boolean) {
     if (uiSession.scratchStorage) {
         uiSession.scratchStorage.previewSelection.hullColor = newColor;
         uiSession.scratchStorage.previewSelection.outlineColor = { ...newColor, alpha: 1 };
-        const cursorProps = uiSession.extensionContext.cursor.getProperties();
+        const cursorProps = uiSession.extensionContext.cursor.getDefaultProperties();
+        cursorProps.visible = true;
         cursorProps.outlineColor = { ...newColor, alpha: 1 };
         cursorProps.targetMode = CursorTargetMode.Face;
-        uiSession.extensionContext.cursor.setProperties(cursorProps);
+        if (isActivation) {
+            uiSession.extensionContext.cursor.pushPropertiesById(cursorProps, MODAL_TOOL_ID);
+        } else {
+            uiSession.extensionContext.cursor.updatePropertiesById(cursorProps, MODAL_TOOL_ID);
+        }
     }
 }
 
@@ -278,6 +284,7 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
         title: 'sample.dyeBrush.pane.title',
         infoTooltip: { description: ['sample.dyebrush.tool.tooltip'] },
     });
+    pane.beginConstruct();
 
     const entityBrush = makeObservable(EntityColor.White);
 
@@ -298,7 +305,7 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
                 if (foundColor) {
                     brushColor.set({ ...foundColor, alpha: brushColor.value.alpha });
                 }
-                onColorUpdated(brushColor.value, uiSession);
+                onColorUpdated(brushColor.value, uiSession, false);
             }
         },
     });
@@ -307,15 +314,17 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
         variant: ColorPickerPropertyItemVariant.Expanded,
         onChange: (color: RGBA) => {
             entityBrush.set(findClosestColor(color, colorPalette));
-            onColorUpdated(brushColor.value, uiSession);
+            onColorUpdated(brushColor.value, uiSession, false);
         },
     });
+
+    pane.endConstruct();
 
     tool.bindPropertyPane(pane);
 
     const onExecuteBrush = () => {
         if (uiSession.scratchStorage === undefined) {
-            uiSession.log.error('Storage was not initialized.');
+            uiSession.log.error('Storage was not initialized.', { channelMask: LogChannel.All });
             return;
         }
 
@@ -365,7 +374,7 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
         actionType: ActionTypes.MouseRayCastAction,
         onExecute: (_, mouseProps: MouseProps) => {
             if (uiSession.scratchStorage === undefined) {
-                uiSession.log.error('Storage was not initialized.');
+                uiSession.log.error('Storage was not initialized.', { channelMask: LogChannel.All });
                 return;
             }
 
@@ -407,7 +416,7 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
     const executeBrushSizeAction = uiSession.actionManager.createAction({
         actionType: ActionTypes.MouseRayCastAction,
         onExecute: (_, mouseProps: MouseProps) => {
-            if (mouseProps.mouseAction === MouseActionType.Wheel) {
+            if (mouseProps.mouseAction === MouseActionType.Wheel && mouseProps.modifiers.shift) {
                 if (mouseProps.inputType === MouseInputType.WheelOut) {
                     if (entityBrush.value > 0) {
                         entityBrush.set(entityBrush.value - 1);
@@ -417,7 +426,7 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
                         entityBrush.set(entityBrush.value + 1);
                     }
                 }
-                onColorUpdated(brushColor.value, uiSession);
+                onColorUpdated(brushColor.value, uiSession, false);
             }
         },
     });
@@ -425,24 +434,16 @@ function addDyeBrushPane(uiSession: DyeBrushSession, tool: IModalTool) {
 
     tool.onModalToolActivation.subscribe((evt: ModalToolLifecycleEventPayload) => {
         if (evt.isActiveTool) {
-            if (uiSession.scratchStorage && !uiSession.scratchStorage.backedUpCursorProps) {
-                uiSession.scratchStorage.backedUpCursorProps = uiSession.extensionContext.cursor.getProperties();
-            }
-            onColorUpdated(brushColor.value, uiSession);
+            onColorUpdated(brushColor.value, uiSession, true);
         } else {
-            if (uiSession.scratchStorage && uiSession.scratchStorage.backedUpCursorProps) {
-                uiSession.extensionContext.cursor.setProperties(uiSession.scratchStorage.backedUpCursorProps);
-                uiSession.scratchStorage.backedUpCursorProps = undefined;
-            }
+            uiSession.extensionContext.cursor.popPropertiesById(MODAL_TOOL_ID);
         }
         uiSession.scratchStorage?.previewSelection?.clearVolume();
     });
-
-    pane.hide();
 }
 
 export function addDyeBrushTool(uiSession: DyeBrushSession) {
-    const tool = uiSession.toolRail.addTool('editorSample:dyeBrushTool', {
+    const tool = uiSession.toolRail.addTool(MODAL_TOOL_ID, {
         title: 'sample.dyebrush.tool.title',
         tooltip: 'sample.dyebrush.tool.tooltip',
         icon: 'pack://textures/dye-brush.png',
@@ -466,7 +467,6 @@ export function registerDyeBrushExtension() {
                 currentColor: EntityColor.White,
                 brushColor: makeObservable<RGBA>({ red: 1, green: 1, blue: 1, alpha: 0.5 }),
                 brushSize: 4,
-                backedUpCursorProps: undefined,
             };
             uiSession.scratchStorage = storage;
 
