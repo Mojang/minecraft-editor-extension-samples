@@ -122,6 +122,7 @@ function addExtensionTool(uiSession: IPlayerUISession<ExtensionStorage>): IModal
 function buildParentPane(uiSession: IPlayerUISession<ExtensionStorage>, storage: ExtensionStorage): IRootPropertyPane {
     const parentPane = uiSession.createPropertyPane({
         title: 'sample.gotomark.pane.title',
+        uniqueId: 'editorSamples:pane:goToMark',
     });
 
     const playerLocation = makeObservable<Vector3>(vector3Truncate(uiSession.extensionContext.player.location));
@@ -420,7 +421,7 @@ export function registerGotoMarkExtension() {
                         `Found ${storage.storedLocations.length} stored locations during initialization`
                     );
                 }
-            } catch (e) {
+            } catch (_e) {
                 uiSession.log.info('No stored locations found during initialization');
             }
 
