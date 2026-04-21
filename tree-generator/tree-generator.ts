@@ -265,6 +265,41 @@ function GetTreeTypes() {
                 BlockPermutation.resolve(MinecraftBlockTypes.DarkOakLeaves)
             ),
         },
+        {
+            name: 'Cherry',
+            type: new SimpleTree(
+                BlockPermutation.resolve(MinecraftBlockTypes.CherryLog),
+                BlockPermutation.resolve(MinecraftBlockTypes.CherryLeaves)
+            ),
+        },
+        {
+            name: 'Mangrove',
+            type: new SimpleTree(
+                BlockPermutation.resolve(MinecraftBlockTypes.MangroveLog),
+                BlockPermutation.resolve(MinecraftBlockTypes.MangroveLeaves)
+            ),
+        },
+        {
+            name: 'Pale Oak',
+            type: new SimpleTree(
+                BlockPermutation.resolve(MinecraftBlockTypes.PaleOakLog),
+                BlockPermutation.resolve(MinecraftBlockTypes.PaleOakLeaves)
+            ),
+        },
+        {
+            name: 'Crimson',
+            type: new SimpleTree(
+                BlockPermutation.resolve(MinecraftBlockTypes.CrimsonStem),
+                BlockPermutation.resolve(MinecraftBlockTypes.NetherWartBlock)
+            ),
+        },
+        {
+            name: 'Warped',
+            type: new SimpleTree(
+                BlockPermutation.resolve(MinecraftBlockTypes.WarpedStem),
+                BlockPermutation.resolve(MinecraftBlockTypes.WarpedWartBlock)
+            ),
+        },
     ];
 }
 
@@ -339,6 +374,8 @@ function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
         uiSession.extensionContext.transactionManager.commitOpenTransaction();
     };
 
+    pane.beginConstruct();
+
     // Add a dropdown for available tree types
     pane.addDropdown(settings.treeType, {
         title: 'sample.treegenerator.pane.type',
@@ -381,7 +418,8 @@ function addToolSettingsPane(uiSession: IPlayerUISession, tool: IModalTool) {
     );
     tool.bindPropertyPane(pane);
 
-    pane.hide();
+    pane.endConstruct();
+
     // Create an action that will be executed on left mouse click
     const executeMouseAction = uiSession.actionManager.createAction({
         actionType: ActionTypes.MouseRayCastAction,
@@ -423,7 +461,7 @@ function addTool(uiSession: IPlayerUISession) {
     uiSession.inputManager.registerKeyBinding(
         EditorInputContext.GlobalToolMode,
         toolToggleAction,
-        { key: KeyboardKey.KEY_T, modifier: InputModifier.Control | InputModifier.Shift },
+        { key: KeyboardKey.KEY_T, modifier: InputModifier.Control | InputModifier.Shift | InputModifier.Alt },
         { uniqueId: 'editorSamples:treeGenerator:toggleTool', label: 'sample.treegenerator.keyBinding.toggleTool' }
     );
 
