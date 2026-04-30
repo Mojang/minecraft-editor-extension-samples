@@ -2,6 +2,16 @@
 ##
 ## Note, trailing spaces will NOT be trimmed. If you want room between the end of the string and the start of a
 ## comment on the same line, use TABs.
-sample.dyebrush.tool.title=Dye Brush
+sample.gotomark.tool.title=Sample Goto Mark	### Sample Text. {MaxLength=1000}
+sample.cameragrapple.title=Sample Camera Base Grapple	### Sample Text. {MaxLength=1000}
+sample.cameragrapple.keyBinding.flyToCursor=Fly To Cursor (Sample)	### Sample Text. {MaxLength=1000}
+sample.cameragrapple.keyBinding.flyToSelection=Fly To Selection (Sample)	### Sample Text. {MaxLength=1000}
+sample.dyebrush.tool.title=Sample Dye Brush	### Sample Text. {MaxLength=1000}
 sample.dyebrush.tool.tooltip=Change the color of entity color components. The updated color is applied when entity simulation resumes.
-sample.dyebrush.pane.colordropdown.title=Color
+sample.dyebrush.pane.colordropdown.title=Color
+sample.farmgenerator.tool.title=Sample Farm Generator	### Sample Text. {MaxLength=1000}
+sample.farmgenerator.keyBinding.toggleTool=Sample Farm Generator	### Sample Text. {MaxLength=1000}
+sample.portalgenerator.title=Sample Portal Generator	### Sample Text. {MaxLength=1000}
+sample.portalgenerator.keyBinding.toggleTool=Sample Portal Generator	### Sample Text. {MaxLength=1000}
+sample.treegenerator.tool.title=Sample Tree Generator	### Sample Text. {MaxLength=1000}
+sample.treegenerator.keyBinding.toggleTool=Sample Tree Generator	### Sample Text. {MaxLength=1000}
