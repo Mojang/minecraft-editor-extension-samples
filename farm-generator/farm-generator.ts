@@ -4,19 +4,20 @@ import { VECTOR3_ZERO } from '@minecraft/math';
 import {
     ActionTypes,
     EditorInputContext,
-    IModalTool,
-    IObservable,
-    IPlayerUISession,
+    type IModalTool,
+    type IObservable,
+    type IPlayerUISession,
     InputModifier,
     KeyboardKey,
+    LogChannel,
     MouseActionType,
     MouseInputType,
-    MouseProps,
-    Ray,
+    type MouseProps,
+    type Ray,
     makeObservable,
     registerEditorExtension,
 } from '@minecraft/server-editor';
-import { Player, Vector3 } from '@minecraft/server';
+import { Player, type Vector3 } from '@minecraft/server';
 import { MinecraftBlockTypes, MinecraftEntityTypes } from '@minecraft/vanilla-data';
 
 type CommonSettingsType = {
@@ -178,7 +179,7 @@ function addFarmGeneratorSettingsPane(uiSession: IPlayerUISession, tool: IModalT
                 : player.getBlockFromViewDirection();
 
         if (!raycastResult) {
-            uiSession.log.error('No block from view vector');
+            uiSession.log.error('No block from view vector', { channelMask: LogChannel.All });
             return;
         }
         const targetBlock = raycastResult.block;
@@ -398,7 +399,7 @@ function addFarmGeneratorTool(uiSession: IPlayerUISession) {
     uiSession.inputManager.registerKeyBinding(
         EditorInputContext.GlobalToolMode,
         toolToggleAction,
-        { key: KeyboardKey.KEY_F, modifier: InputModifier.Control | InputModifier.Shift },
+        { key: KeyboardKey.KEY_F, modifier: InputModifier.Control | InputModifier.Shift | InputModifier.Alt },
         {
             uniqueId: 'editorSamples:farmGenerator:toggleTool',
             label: 'sample.farmgenerator.keyBinding.toggleTool',
