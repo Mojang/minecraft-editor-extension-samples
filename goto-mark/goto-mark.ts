@@ -2,21 +2,21 @@
 
 import {
     ActionTypes,
-    IButtonPropertyItem,
-    IDropdownPropertyItemEntry,
-    IDropdownPropertyItem,
-    IModalTool,
-    IObservable,
-    IPlayerUISession,
-    IPropertyPane,
-    IRootPropertyPane,
+    type IButtonPropertyItem,
+    type IDropdownPropertyItemEntry,
+    type IDropdownPropertyItem,
+    type IModalTool,
+    type IObservable,
+    type IPlayerUISession,
+    type IPropertyPane,
+    type IRootPropertyPane,
     UserDefinedTransactionHandle,
     makeObservable,
     registerEditorExtension,
     registerUserDefinedTransactionHandler,
     stringFromException,
 } from '@minecraft/server-editor';
-import { Vector3, system } from '@minecraft/server';
+import { type Vector3, system } from '@minecraft/server';
 
 const storedLocationDynamicPropertyName = 'goto-mark:storedLocations'; // The key of the stored location dynamic property
 const storedLocationNameMaxLength = 16; // This is the maximum length of the name of a stored location
@@ -122,6 +122,7 @@ function addExtensionTool(uiSession: IPlayerUISession<ExtensionStorage>): IModal
 function buildParentPane(uiSession: IPlayerUISession<ExtensionStorage>, storage: ExtensionStorage): IRootPropertyPane {
     const parentPane = uiSession.createPropertyPane({
         title: 'sample.gotomark.pane.title',
+        uniqueId: 'editorSamples:pane:goToMark',
     });
 
     const playerLocation = makeObservable<Vector3>(vector3Truncate(uiSession.extensionContext.player.location));
@@ -420,7 +421,7 @@ export function registerGotoMarkExtension() {
                         `Found ${storage.storedLocations.length} stored locations during initialization`
                     );
                 }
-            } catch (e) {
+            } catch (_e) {
                 uiSession.log.info('No stored locations found during initialization');
             }
 
