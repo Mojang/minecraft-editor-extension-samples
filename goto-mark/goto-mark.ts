@@ -2,29 +2,28 @@
 
 import {
     ActionTypes,
-    IButtonPropertyItem,
-    IDropdownPropertyItemEntry,
-    IDropdownPropertyItem,
-    IModalTool,
-    IObservable,
-    IPlayerUISession,
-    IPropertyPane,
-    IRootPropertyPane,
+    type IButtonPropertyItem,
+    type IDropdownPropertyItemEntry,
+    type IDropdownPropertyItem,
+    type IModalTool,
+    type IObservable,
+    type IPlayerUISession,
+    type IPropertyPane,
+    type IRootPropertyPane,
     UserDefinedTransactionHandle,
     makeObservable,
     registerEditorExtension,
     registerUserDefinedTransactionHandler,
     stringFromException,
 } from '@minecraft/server-editor';
-import { Vector3, system } from '@minecraft/server';
+import { type Vector3, system } from '@minecraft/server';
 
 const storedLocationDynamicPropertyName = 'goto-mark:storedLocations'; // The key of the stored location dynamic property
 const storedLocationNameMaxLength = 16; // This is the maximum length of the name of a stored location
 const storedLocationsMax = 9; // The maximum number of stored locations
 
 type GotoTeleportTransactionPayload = {
-    current: Vector3;
-    destination: Vector3;
+    position: Vector3;
 };
 
 // The stored location data structure that represents each of the stored locations
@@ -86,17 +85,24 @@ function mapDropdownItems(storage: ExtensionStorage): IDropdownPropertyItemEntry
 }
 
 function createTransaction(uiSession: IPlayerUISession<ExtensionStorage>, current: Vector3, destination: Vector3) {
-    const transactionPayload: GotoTeleportTransactionPayload = {
-        current,
-        destination,
+    const oldPayload: GotoTeleportTransactionPayload = {
+        position: current,
+    };
+    const newPayload: GotoTeleportTransactionPayload = {
+        position: destination,
     };
     if (!uiSession.scratchStorage) {
         return;
     }
 
-    uiSession.extensionContext.transactionManager.openTransaction('goto position');
-    uiSession.scratchStorage.transactionHandler.addUserDefinedOperation(transactionPayload, 'Goto(Teleport)');
-    uiSession.extensionContext.transactionManager.commitOpenTransaction();
+    const pendingTransaction = uiSession.extensionContext.transactionManager.createPendingTransaction('goto position');
+    uiSession.scratchStorage.transactionHandler.addUserDefinedOperation(
+        oldPayload,
+        newPayload,
+        'Goto(Teleport)',
+        pendingTransaction
+    );
+    pendingTransaction.submit();
 }
 
 function teleportTo(uiSession: IPlayerUISession<ExtensionStorage>, destination: Vector3) {
@@ -122,6 +128,7 @@ function addExtensionTool(uiSession: IPlayerUISession<ExtensionStorage>): IModal
 function buildParentPane(uiSession: IPlayerUISession<ExtensionStorage>, storage: ExtensionStorage): IRootPropertyPane {
     const parentPane = uiSession.createPropertyPane({
         title: 'sample.gotomark.pane.title',
+        uniqueId: 'editorSamples:pane:goToMark',
     });
 
     const playerLocation = makeObservable<Vector3>(vector3Truncate(uiSession.extensionContext.player.location));
@@ -386,18 +393,18 @@ export function registerGotoMarkExtension() {
                     uiSession.extensionContext.transactionManager,
                     (payload: GotoTeleportTransactionPayload) => {
                         // undo handler
-                        uiSession.log.info(`Teleporting to location ${vector3ToString(payload.current)}`);
+                        uiSession.log.info(`Teleporting to location ${vector3ToString(payload.position)}`);
                         try {
-                            uiSession.extensionContext.player.teleport(payload.current);
+                            uiSession.extensionContext.player.teleport(payload.position);
                         } catch (e) {
                             uiSession.log.error(`Teleport failed: ${stringFromException(e)}`);
                         }
                     },
                     (payload: GotoTeleportTransactionPayload) => {
                         // redo handler
-                        uiSession.log.info(`Teleporting to location ${vector3ToString(payload.destination)}`);
+                        uiSession.log.info(`Teleporting to location ${vector3ToString(payload.position)}`);
                         try {
-                            uiSession.extensionContext.player.teleport(payload.destination);
+                            uiSession.extensionContext.player.teleport(payload.position);
                         } catch (e) {
                             uiSession.log.error(`Teleport failed: ${stringFromException(e)}`);
                         }
@@ -420,7 +427,7 @@ export function registerGotoMarkExtension() {
                         `Found ${storage.storedLocations.length} stored locations during initialization`
                     );
                 }
-            } catch (e) {
+            } catch (_e) {
                 uiSession.log.info('No stored locations found during initialization');
             }
 
