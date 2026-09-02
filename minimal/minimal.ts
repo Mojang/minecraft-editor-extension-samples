@@ -3,8 +3,9 @@
 import {
     ActionTypes,
     CoreMenuType,
-    IMenu,
-    IPlayerUISession,
+    type IMenu,
+    type IPlayerUISession,
+    LogChannel,
     registerEditorExtension,
 } from '@minecraft/server-editor';
 
@@ -22,7 +23,9 @@ type PerPlayerStorage = {
 // the button has been clicked
 function showPlayerMessage(uiSession: IPlayerUISession<PerPlayerStorage>) {
     if (!uiSession.scratchStorage) {
-        uiSession.log.error("We're missing scratch storage - this shouldn't happen!");
+        uiSession.log.error("We're missing scratch storage - this shouldn't happen!", {
+            channelMask: LogChannel.All,
+        });
         return;
     }
     const clickCount = uiSession.scratchStorage.NUM_TIMES_PLAYER_CLICKED;
@@ -66,6 +69,7 @@ export function registerMinimalExtension() {
             // when you adjust the slider, you can inspect the binding object property 'mySlider' for the current value.
             const extensionPane = uiSession.createPropertyPane({
                 title: 'sample.minimal.pane.title',
+                uniqueId: 'editorSamples:pane:minimal',
             });
 
             // Creating UI elements like buttons and sliders require a couple of simple steps.
@@ -116,7 +120,9 @@ export function registerMinimalExtension() {
                     );
                 })
                 .catch((error: Error) => {
-                    uiSession.log.error(error.message);
+                    uiSession.log.error(error.message, {
+                        channelMask: LogChannel.All,
+                    });
                 });
 
             // Normally we return a collection of IDisposable objects that the extension system will clean
