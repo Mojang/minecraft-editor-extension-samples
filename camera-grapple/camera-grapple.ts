@@ -5,11 +5,11 @@ import {
     ActionTypes,
     CursorControlMode,
     EditorInputContext,
-    IPlayerUISession,
+    type IPlayerUISession,
     KeyboardKey,
     registerEditorExtension,
 } from '@minecraft/server-editor';
-import { EasingType, TicksPerSecond, Vector3, system } from '@minecraft/server';
+import { EasingType, TicksPerSecond, type Vector3, system } from '@minecraft/server';
 
 interface GrappleStorage {
     latestRunId?: number;
