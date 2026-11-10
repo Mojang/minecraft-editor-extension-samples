@@ -3,28 +3,29 @@
 import {
     BoolPropertyItemVariant,
     CursorTargetMode,
-    IDisposable,
+    type IDisposable,
     ImageResourceType,
-    IObservable,
-    IRootPropertyPane,
+    type IObservable,
+    type IRootPropertyPane,
+    LogChannel,
     makeObservable,
     NumberPropertyItemVariant,
-    Ray,
+    type Ray,
 } from '@minecraft/server-editor';
 import {
-    IPlayerUISession,
+    type IPlayerUISession,
     registerEditorExtension,
-    IModalTool,
+    type IModalTool,
     ActionTypes,
-    MouseProps,
+    type MouseProps,
     MouseActionType,
     MouseInputType,
     KeyboardKey,
     InputModifier,
     EditorInputContext,
-    IPropertyPane,
+    type IPropertyPane,
 } from '@minecraft/server-editor';
-import { Vector3 } from '@minecraft/server';
+import type { Vector3 } from '@minecraft/server';
 import { MinecraftBlockTypes } from '@minecraft/vanilla-data';
 
 enum PortalType {
@@ -60,6 +61,8 @@ interface IPortalGenerator {
 }
 
 class PortalGenerator implements IDisposable {
+    static readonly MODAL_TOOL_ID = 'editorSample:portalTool';
+
     private _netherPortal: NetherPortal;
     private _endPortal: EndPortal;
     private _activePortal?: IPortalGenerator;
@@ -77,7 +80,7 @@ class PortalGenerator implements IDisposable {
 
     public toolPane(uiSession: PortalGeneratorSession): IRootPropertyPane | undefined {
         if (!this._pane) {
-            uiSession.log.error('Tool pane not initialized');
+            uiSession.log.error('Tool pane not initialized', { channelMask: LogChannel.All });
             return undefined;
         }
         return this._pane;
@@ -93,18 +96,26 @@ class PortalGenerator implements IDisposable {
         });
 
         // Add the extension to the tool rail and give it an icon
-        const tool = uiSession.toolRail.addTool('editorSample:portalTool', {
+        const tool = uiSession.toolRail.addTool(PortalGenerator.MODAL_TOOL_ID, {
             title: 'sample.portalgenerator.title',
             icon: 'pack://textures/portal-generator.png',
             tooltip: 'sample.portalgenerator.tooltip',
             action: toolToggleAction,
         });
 
+        tool.onModalToolActivation.subscribe(evt => {
+            if (evt.isActiveTool) {
+                uiSession.extensionContext.cursor.pushPropertiesById({}, PortalGenerator.MODAL_TOOL_ID);
+            } else {
+                uiSession.extensionContext.cursor.popPropertiesById(PortalGenerator.MODAL_TOOL_ID);
+            }
+        });
+
         // Register a global shortcut (CTRL + SHIFT + P) to select the tool
         uiSession.inputManager.registerKeyBinding(
             EditorInputContext.GlobalToolMode,
             toolToggleAction,
-            { key: KeyboardKey.KEY_P, modifier: InputModifier.Control | InputModifier.Shift },
+            { key: KeyboardKey.KEY_P, modifier: InputModifier.Control | InputModifier.Shift | InputModifier.Alt },
             {
                 uniqueId: 'editorSamples:portalGenerator:toggleTool',
                 label: 'sample.portalgenerator.keyBinding.toggleTool',
@@ -148,7 +159,7 @@ class PortalGenerator implements IDisposable {
             title: 'sample.portalgenerator.pane.replacefloor',
             onChange: (current: boolean) => {
                 const targetMode = current ? CursorTargetMode.Block : CursorTargetMode.Face;
-                uiSession.extensionContext.cursor.setProperties({ targetMode });
+                uiSession.extensionContext.cursor.updatePropertiesById({ targetMode }, PortalGenerator.MODAL_TOOL_ID);
             },
             variant: BoolPropertyItemVariant.ToggleSwitch,
         });
@@ -178,8 +189,6 @@ class PortalGenerator implements IDisposable {
     }
 
     activatePortalGenerator(uiSession: PortalGeneratorSession, portalType: PortalType): void {
-        this._pane?.hide();
-
         if (this._activePortal) {
             this._activePortal.deactivatePane();
         }
@@ -191,8 +200,6 @@ class PortalGenerator implements IDisposable {
         }
 
         this._activePortal.activatePane(uiSession);
-
-        this._pane?.show();
     }
 }
 
@@ -211,7 +218,7 @@ class NetherPortal implements IPortalGenerator {
 
     public subPane(uiSession: PortalGeneratorSession): IPropertyPane | undefined {
         if (!this._pane) {
-            uiSession.log.error('Sub pane not initialized');
+            uiSession.log.error('Sub pane not initialized', { channelMask: LogChannel.All });
             return undefined;
         }
         return this._pane;
@@ -227,22 +234,19 @@ class NetherPortal implements IPortalGenerator {
         }
 
         this._pane = this.buildSubPane(uiSession);
-        this._pane?.show();
     }
 
     deactivatePane(): void {
         if (this._pane) {
-            this._pane.hide();
             this._parentPane?.removeSubPane(this._pane);
         }
-
         this._pane = undefined;
     }
 
     buildSubPane(uiSession: PortalGeneratorSession): IPropertyPane | undefined {
         const windowPane = this._parentPane;
         if (!windowPane) {
-            uiSession.log.error('Failed to find window binding');
+            uiSession.log.error('Failed to find window binding', { channelMask: LogChannel.All });
             return undefined;
         }
 
@@ -312,7 +316,13 @@ class NetherPortal implements IPortalGenerator {
             return;
         }
 
-        uiSession.extensionContext.transactionManager.openTransaction('Transaction group portal generator');
+        const pendingTransaction = uiSession.extensionContext.transactionManager.createPendingTransaction(
+            'Transaction group portal generator'
+        );
+        if (!pendingTransaction.isValid()) {
+            uiSession.log.warning('Failed to open transaction');
+            return;
+        }
 
         let from: Vector3 = location;
         let to: Vector3 = { x: 0, y: 0, z: 0 };
@@ -330,14 +340,14 @@ class NetherPortal implements IPortalGenerator {
                 z: location.z + this._sizeX.value,
             };
         } else {
-            uiSession.log.error('Failed to get valid orientation');
-            uiSession.extensionContext.transactionManager.discardOpenTransaction();
+            uiSession.log.error('Failed to get valid orientation', { channelMask: LogChannel.All });
+            pendingTransaction.discard();
             return;
         }
 
         const yEnd = this._sizeY.value - 1;
         const xEnd = this._sizeX.value - 1;
-        uiSession.extensionContext.transactionManager.trackBlockChangeArea(from, to);
+        pendingTransaction.trackBlockChangeArea(from, to);
         for (let y = 0; y < this._sizeY.value; ++y) {
             for (let x = 0; x < this._sizeX.value; ++x) {
                 let block = MinecraftBlockTypes.Air;
@@ -400,7 +410,7 @@ class NetherPortal implements IPortalGenerator {
             );
         }
 
-        uiSession.extensionContext.transactionManager.commitOpenTransaction();
+        pendingTransaction.submit();
     }
 }
 
@@ -415,7 +425,7 @@ class EndPortal implements IPortalGenerator {
 
     public subPane(uiSession: PortalGeneratorSession): IPropertyPane | undefined {
         if (!this._pane) {
-            uiSession.log.error('Sub pane not initialized');
+            uiSession.log.error('Sub pane not initialized', { channelMask: LogChannel.All });
             return undefined;
         }
         return this._pane;
@@ -429,24 +439,20 @@ class EndPortal implements IPortalGenerator {
         if (this._pane) {
             this.deactivatePane();
         }
-
         this._pane = this.buildSubPane(uiSession);
-        this._pane?.show();
     }
 
     deactivatePane(): void {
         if (this._pane) {
-            this._pane.hide();
             this._parentPane?.removeSubPane(this._pane);
         }
-
         this._pane = undefined;
     }
 
     buildSubPane(uiSession: PortalGeneratorSession): IPropertyPane | undefined {
         const windowPane = this._parentPane;
         if (!windowPane) {
-            uiSession.log.error('Failed to find window pane');
+            uiSession.log.error('Failed to find window pane', { channelMask: LogChannel.All });
             return undefined;
         }
 
@@ -471,11 +477,17 @@ class EndPortal implements IPortalGenerator {
 
         const targetBlock = me.dimension.getBlock(location);
         if (targetBlock === undefined) {
-            uiSession.log.error('No block selected');
+            uiSession.log.error('No block selected', { channelMask: LogChannel.All });
             return;
         }
 
-        uiSession.extensionContext.transactionManager.openTransaction('Transaction group portal generator');
+        const pendingTransaction = uiSession.extensionContext.transactionManager.createPendingTransaction(
+            'Transaction group portal generator'
+        );
+        if (!pendingTransaction.isValid()) {
+            uiSession.log.error('Failed to open transaction');
+            return;
+        }
 
         const from: Vector3 = { x: location.x, y: location.y, z: location.z };
         const to: Vector3 = { x: location.x + 4, y: location.y, z: location.z + 4 };
@@ -493,7 +505,7 @@ class EndPortal implements IPortalGenerator {
         }
 
         let i = 0;
-        uiSession.extensionContext.transactionManager.trackBlockChangeArea(from, to);
+        pendingTransaction.trackBlockChangeArea(from, to);
 
         for (let z = 0; z < 5; ++z) {
             for (let x = 0; x < 5; ++x) {
@@ -534,12 +546,12 @@ class EndPortal implements IPortalGenerator {
                         i += 1;
                     }
                 } else {
-                    uiSession.log.error('Failed to get block');
+                    uiSession.log.error('Failed to get block', { channelMask: LogChannel.All });
                 }
             }
         }
 
-        uiSession.extensionContext.transactionManager.commitOpenTransaction();
+        pendingTransaction.submit();
     }
 }
 
