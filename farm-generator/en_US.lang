@@ -2,7 +2,12 @@
 ##
 ## Note, trailing spaces will NOT be trimmed. If you want room between the end of the string and the start of a
 ## comment on the same line, use TABs.
-sample.farmgenerator.tool.title=Farm Generator
+sample.gotomark.tool.title=Sample Goto Mark	### Sample Text. {MaxLength=1000}
+sample.cameragrapple.title=Sample Camera Base Grapple	### Sample Text. {MaxLength=1000}
+sample.cameragrapple.keyBinding.flyToCursor=Fly To Cursor (Sample)	### Sample Text. {MaxLength=1000}
+sample.cameragrapple.keyBinding.flyToSelection=Fly To Selection (Sample)	### Sample Text. {MaxLength=1000}
+sample.dyebrush.tool.title=Sample Dye Brush	### Sample Text. {MaxLength=1000}
+sample.farmgenerator.tool.title=Sample Farm Generator	### Sample Text. {MaxLength=1000}
 sample.farmgenerator.tool.tooltip=Quickly create a custom farm
 sample.farmgenerator.pane.title=Farm Generator
 sample.farmgenerator.pane.length=Length
@@ -20,5 +25,9 @@ sample.farmgenerator.pane.animals.title=Animals
 sample.farmgenerator.pane.animals.cow=Cow
 sample.farmgenerator.pane.animals.sheep=Sheep
 sample.farmgenerator.pane.animals.pig=Pig
-sample.farmgenerator.keyBinding.toggleTool=Toggle Farm Generator Tool
-sample.farmgenerator.keyBinding.place=Place Farm At Cursor
+sample.farmgenerator.keyBinding.toggleTool=Sample Farm Generator	### Sample Text. {MaxLength=1000}
+sample.farmgenerator.keyBinding.place=Place Farm At Cursor
+sample.portalgenerator.title=Sample Portal Generator	### Sample Text. {MaxLength=1000}
+sample.portalgenerator.keyBinding.toggleTool=Sample Portal Generator	### Sample Text. {MaxLength=1000}
+sample.treegenerator.tool.title=Sample Tree Generator	### Sample Text. {MaxLength=1000}
+sample.treegenerator.keyBinding.toggleTool=Sample Tree Generator	### Sample Text. {MaxLength=1000}
